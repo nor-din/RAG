@@ -2,8 +2,6 @@ import json
 from pathlib import Path
 
 
-
-
 def read_file(path_file):
     with open(path_file, "r", errors="ignore", encoding="utf-8") as file:
         content = file.read()
@@ -17,6 +15,7 @@ def chunk_python_code(path, max_chunk_size=2000):
         current = ""
         for line in text.split("\n"):
             if line.startswith("def") or line.startswith("class"):
+                current = current.strip()
                 if current:
                     if len(current) > max_chunk_size:
                         for i in range(0, len(current), max_chunk_size):
@@ -25,24 +24,35 @@ def chunk_python_code(path, max_chunk_size=2000):
                                 "file_path": str(file),
                                 "text": piece,
                                 "start": text.find(piece),
-                                "end": text.find(piece) + len(piece)
+                                "end": text.find(piece)+ len(piece)
                             })
                     else:
                         chunks.append({
                             "file_path": str(file),
                             "text": current,
                             "start": text.find(current),
-                            "end": text.find(current) + len(current)
+                            "end":  text.find(current)+ len(current)
                         })
                 current = line
             else:
                 current += '\n' + line
+        current = current.strip()
         if current:
-            chunks.append({
-                "file_path": str(file),
-                "text": current,
-                "start": text.find(current),
-                "end": text.find(current) + len(current)
+            if len(current) > max_chunk_size:
+                for i in range(0, len(current), max_chunk_size):
+                    piece = current[i:i+max_chunk_size]
+                    chunks.append({
+                        "file_path": str(file),
+                        "text": piece,
+                        "start": text.find(piece),
+                        "end": text.find(piece) + len(piece)
+                    })
+            else:
+                chunks.append({
+                    "file_path": str(file),
+                    "text": current,
+                    "start": text.find(current),
+                    "end": text.find(current) + len(current)
                 })
     return chunks
 
@@ -50,10 +60,11 @@ def chunk_markedown(path, max_chunk_size=2000):
     chunks = []
     folder = Path(path)
     for file in folder.rglob("*.md"):
-        current = ""
         text = read_file(file)
+        current = ""
         for line in text.split("\n"):
             if line.startswith("#"):
+                current = current.strip()
                 if current:
                     if len(current) > max_chunk_size:
                         for i in range(0, len(current), max_chunk_size):
@@ -62,25 +73,36 @@ def chunk_markedown(path, max_chunk_size=2000):
                                 "file_path": str(file),
                                 "text": piece,
                                 "start": text.find(piece),
-                                "end": len(piece) + text.find(piece)
+                                "end": text.find(piece)+ len(piece)
                             })
                     else:
                         chunks.append({
-                                "file_path": str(file),
-                                "text": current,
-                                "start": text.find(current),
-                                "end": len(current) + text.find(current)
-                            })
+                            "file_path": str(file),
+                            "text": current,
+                            "start": text.find(current),
+                            "end":  text.find(current)+ len(current)
+                        })
                 current = line
             else:
                 current += '\n' + line
+        current = current.strip()
         if current:
-            chunks.append({
-                "file_path": str(file),
-                "text": current,
-                "start": text.find(current),
-                "end": len(current) + text.find(current)
-            })
+            if len(current) > max_chunk_size:
+                for i in range(0, len(current), max_chunk_size):
+                    piece = current[i:i+max_chunk_size]
+                    chunks.append({
+                        "file_path": str(file),
+                        "text": piece,
+                        "start": text.find(piece),
+                        "end": text.find(piece) + len(piece)
+                    })
+            else:
+                chunks.append({
+                    "file_path": str(file),
+                    "text": current,
+                    "start": text.find(current),
+                    "end": text.find(current) + len(current)
+                })
     return chunks
 
 def chunker(path, max_chunk_size=2000):
