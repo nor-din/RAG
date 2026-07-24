@@ -1,6 +1,5 @@
 import json
-import bm25s
-
+from src.bm25 import BM25
 def load_json(path):
     with open(path, 'r') as file:
         content = json.load(file)
@@ -8,12 +7,11 @@ def load_json(path):
 
 def search(chunks_path, index_path, query, k=5):
     chunks = load_json(chunks_path)
-    retrieve = bm25s.BM25.load(index_path)
-    token_query = bm25s.tokenize([query])
-    results, _ = retrieve.retrieve(token_query, k=k)
+    retrieve = BM25()
+    retrieve.load(index_path)
+    results= retrieve.searcher(query, k=k)
     found = []
-    for i in range(results.shape[1]):
-            idx = results[0][i]
+    for _, idx in results:
             found.append({
                 "file_path":chunks[idx]['file_path'],
                 "first_character_index":chunks[idx]['start'],

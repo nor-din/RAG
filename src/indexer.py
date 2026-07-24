@@ -1,5 +1,5 @@
 import json
-import bm25s
+from src.bm25 import BM25
 
 def load_chunk(path):
     with open(path, "r") as file:
@@ -8,7 +8,6 @@ def load_chunk(path):
 def indexer(chunks_path, index_path):
     chunks = load_chunk(chunks_path)
     corpus = [chunk['text'] for chunk in chunks]
-    retriever = bm25s.BM25()
-    corpus_tokens = bm25s.tokenize(corpus)
-    retriever.index(corpus_tokens)
+    retriever = BM25()
+    retriever.index(corpus)
     retriever.save(index_path)

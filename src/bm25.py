@@ -1,5 +1,7 @@
+import re
 import math
 import json
+
 
 class BM25:
     def __init__(self):
@@ -8,9 +10,24 @@ class BM25:
         self.corpus = []
         self.idf = {}
         self.avgdl = 0
+        self.STOPWORDS = {
+                "a", "an", "the", "is", "are", "was",
+                "be", "been", "being", "have", "has",
+                "do", "does", "did", "to", "of", "in",
+                "for", "on", "with", "at", "by", "from",
+                "and", "or", "but", "if", "not", "this",
+                "that", "it", "its", "what", "how",
+                "which", "who", "when", "where", "why",
+                "all", "each", "both", "more", "so",
+                "than", "too", "very", "just", "no"
+            }
+    def tokenize(self, text):
+        clean_text = re.sub(r"[^\w\s]", ' ', text)
+        tokens = clean_text.lower().split()
+        return [w for w in tokens if w not in self.STOPWORDS]
 
     def index(self, texts):
-        self.corpus = [word.lower().split() for word in texts]
+        self.corpus = [self.tokenize(text) for text in texts]
         self.avgdl = sum(len(doc) for doc in self.corpus) / len(self.corpus)
         counter = {}
         n = len(self.corpus)
@@ -33,7 +50,7 @@ class BM25:
         return bm25
 
     def searcher(self,query, k):
-        token_query = [word.lower() for word in query.split()]
+        token_query = self.tokenize(query)
         scores = []
         i = 0
         for doc in self.corpus:
