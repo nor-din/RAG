@@ -23,8 +23,11 @@ class BM25:
             }
     def tokenize(self, text):
         clean_text = re.sub(r"[^\w\s]", ' ', text)
-        tokens = clean_text.lower().split()
-        return [w for w in tokens if w not in self.STOPWORDS]
+        words = clean_text.lower().split()
+        tokens = [w for w in words if w not in self.STOPWORDS]
+        if not tokens:
+            return words
+        return tokens
 
     def index(self, texts):
         self.corpus = [self.tokenize(text) for text in texts]
