@@ -62,13 +62,3 @@ class BM25:
         self.idf = content['idf']
         self.avgdl = content['avgdf']
         self.corpus = content['corpus']
-
-b = BM25()
-b.index(["vllm is fast", "install vllm"])
-b.save("index.json")
-
-# Load fresh
-b2 = BM25()
-b2.load("index.json")
-result = b2.searcher("install vllm", 3)
-print(result)
