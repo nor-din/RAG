@@ -4,7 +4,7 @@ from src.chunker import chunker, save_chunks
 from src.indexer import indexer
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
-from src.generator import genrate_answer, load_model, genrate_dataset
+from src.generator import genrate_answer, load_model, genrate_dataset, load_chunk
 from src.evaluation import evaluation
 
 
@@ -37,7 +37,8 @@ class CLI:
     def answer(self, query, k=10):
         pipe = load_model()
         chunks_retriever = ft_search(CHUNKS_PATH, INDEX_PATH, query, k)
-        answer = genrate_answer(pipe, query, chunks_retriever, CHUNKS_PATH)
+        all_chunks = load_chunk(CHUNKS_PATH)
+        answer = genrate_answer(pipe, query, all_chunks ,chunks_retriever)
         print("----------------------------------------------------------")
         print(answer)
     def answer_dataset(self, student_search_results_path , save_directory="data/output/search_results_and_answer", k=10):
@@ -45,7 +46,8 @@ class CLI:
         file_name = os.path.basename(student_search_results_path)
         output_path = os.path.join(save_directory, file_name)
         pipe = load_model()
-        genrate_dataset(pipe, CHUNKS_PATH, student_search_results_path, output_path, k)
+        all_chunks = load_chunk(CHUNKS_PATH)
+        genrate_dataset(pipe, all_chunks, student_search_results_path, output_path, k)
         print(f"Saved student_search_results to {output_path}")
     def evaluate(self, student_search_results_path, dataset_path, k=10):
         evaluation(student_search_results_path, dataset_path, k)

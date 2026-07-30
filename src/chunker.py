@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from tqdm import tqdm
 
 
 def read_file(path_file):
@@ -10,7 +11,8 @@ def read_file(path_file):
 def chunk_python_code(path, max_chunk_size=2000):
     chunks = []
     folder = Path(path)
-    for file in folder.rglob("*.py"):
+    py_files = folder.rglob("*.py")
+    for file in tqdm(py_files, desc="Chunking py files"):
         text = read_file(file)
         current = ""
         for line in text.split("\n"):
@@ -59,7 +61,8 @@ def chunk_python_code(path, max_chunk_size=2000):
 def chunk_markedown(path, max_chunk_size=2000):
     chunks = []
     folder = Path(path)
-    for file in folder.rglob("*.md"):
+    md_files = folder.rglob("*.md")
+    for file in tqdm(md_files, desc="Chunking md files"):
         text = read_file(file)
         current = ""
         for line in text.split("\n"):

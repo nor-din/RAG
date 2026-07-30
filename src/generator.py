@@ -2,6 +2,7 @@ import json
 import torch
 from transformers import pipeline
 from src.retriever import search
+from tqdm import tqdm
 
 
 def load_chunk(path):
@@ -17,9 +18,8 @@ def load_model():
     )
     return pipe
 
-def genrate_answer(pipe, question, chunks_retriever, chunks_path):
+def genrate_answer(pipe, question, all_chunks ,chunks_retriever):
     context = []
-    all_chunks = load_chunk(chunks_path)
 
     for results in chunks_retriever:
         for chunk in all_chunks:
@@ -37,11 +37,11 @@ def genrate_answer(pipe, question, chunks_retriever, chunks_path):
         return assisant.split("</think>")[-1].strip()
     return assisant.strip()
 
-def genrate_dataset(pipe ,chunks_path, dataset_path, output_path, k=5):
+def genrate_dataset(pipe ,all_chunks, dataset_path, output_path, k=5):
     all_results = []
     dataset = load_chunk(dataset_path)
-    for query in dataset['search_results']:
-        answer = genrate_answer(pipe, query['question'], query['retrieved_sources'], chunks_path)
+    for query in tqdm(dataset['search_results'], desc="Generating answers"):
+        answer = genrate_answer(pipe, query['question'], all_chunks, query['retrieved_sources'])
         all_results.append({
             "question_id": query['question_id'],
             "question": query['question'],

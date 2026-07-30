@@ -1,6 +1,4 @@
-def main():
-    print("Hello from ragt!")
+from tqdm import tqdm
 
-
-if __name__ == "__main__":
-    main()
+for i in tqdm(range(10), desc="Search"):
+    print(i)

@@ -1,5 +1,8 @@
 import json
 from src.bm25 import BM25
+from tqdm import tqdm
+
+
 def load_json(path):
     with open(path, 'r') as file:
         content = json.load(file)
@@ -24,7 +27,7 @@ def search_dataset(chunks_path, index_path, dataset_path, output_path, k=5):
     dataset = load_json(dataset_path)
     questions_dataset = dataset['rag_questions']
     questions = [question for question in questions_dataset]
-    for query in questions:
+    for query in tqdm(questions, desc="Searching"):
         results = search(chunks_path, index_path, query['question'], k)
         all_results.append({
             "question_id": query['question_id'],
