@@ -5,6 +5,8 @@ from src.indexer import indexer
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
 from src.generator import genrate_answer, load_model, genrate_dataset
+from src.evaluation import evaluation
+
 
 REPO_PATH    = "data/raw/vllm-0.10.1"
 CHUNKS_PATH  = "data/processed/chunks.json"
@@ -45,6 +47,8 @@ class CLI:
         pipe = load_model()
         genrate_dataset(pipe, CHUNKS_PATH, student_search_results_path, output_path, k)
         print(f"Saved student_search_results to {output_path}")
-        
+    def evaluate(self, student_search_results_path, dataset_path, k=10):
+        evaluation(student_search_results_path, dataset_path, k)
+
 if __name__ == "__main__":
     fire.Fire(CLI)
