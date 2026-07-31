@@ -1,7 +1,7 @@
 import json
 from src.bm25 import BM25
 from tqdm import tqdm
-from src.models import MinimalSearchResults, MinimalSource, StudentSearchResults
+from src.models import MinimalSearchResults, MinimalSource, StudentSearchResults, RagDataset
 
 
 def load_json(path):
@@ -26,16 +26,16 @@ def search(chunks_path, index_path, query, k=5):
 
 def search_dataset(chunks_path, index_path, dataset_path, output_path, k=5):
     all_results = []
-    dataset = load_json(dataset_path)
-    questions_dataset = dataset['rag_questions']
+    dataset = RagDataset(**load_json(dataset_path))
+    questions_dataset = dataset.rag_questions
     questions = [question for question in questions_dataset]
     for query in tqdm(questions, desc="Searching"):
-        results = search(chunks_path, index_path, query['question'], k)
+        results = search(chunks_path, index_path, query.question, k)
         search_result = MinimalSearchResults(
-            question_id=query['question_id'],
-            question=query['question'],
+            question_id=query.question_id,
+            question=query.question,
             retrieved_sources=results
-        )
+        )   
         all_results.append(search_result.model_dump())
     
     output = StudentSearchResults(

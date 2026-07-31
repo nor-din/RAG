@@ -3,6 +3,7 @@ import torch
 from transformers import pipeline
 from src.retriever import search
 from tqdm import tqdm
+from src.models import StudentSearchResultsAndAnswer, MinimalAnswer, StudentSearchResults
 
 
 def load_chunk(path):
@@ -39,18 +40,20 @@ def genrate_answer(pipe, question, all_chunks ,chunks_retriever):
 
 def genrate_dataset(pipe ,all_chunks, dataset_path, output_path, k=5):
     all_results = []
-    dataset = load_chunk(dataset_path)
-    for query in tqdm(dataset['search_results'], desc="Generating answers"):
-        answer = genrate_answer(pipe, query['question'], all_chunks, query['retrieved_sources'])
-        all_results.append({
-            "question_id": query['question_id'],
-            "question": query['question'],
-            "retrieved_sources": query['retrieved_sources'],
-            "answer": answer
-        })
-    output = {
-        "search_results":all_results,
-        "k":k
-    }
+    dataset = StudentSearchResults(**load_chunk(dataset_path))
+    questions = dataset.search_results
+    for query in tqdm(questions, desc="Generating answers"):
+        answer = genrate_answer(pipe, query.question, all_chunks, query.retrieved_sources)
+        results = MinimalAnswer(
+            question_id=query.question_id,
+            question=query.question,
+            retrieved_sources=query.retrieved_sources,
+            answer=answer
+        )
+        all_results.append(results.model_dump())
+    output = StudentSearchResultsAndAnswer(
+        search_results=all_results,
+        k=k
+    )
     with open(output_path, 'w') as file:
-        json.dump(output, file, indent=2)
+        json.dump(output.model_dump(), file, indent=2)
