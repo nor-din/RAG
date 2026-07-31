@@ -1,19 +1,25 @@
-import sys
 import json
+import sys
 from pathlib import Path
+
 try:
     from tqdm import tqdm
 except (ModuleNotFoundError, ImportError):
     print("Module not installed")
     sys.exit(1)
+from typing import Any, Dict, List
 
 
-def read_file(path_file):
+def read_file(path_file: Path) -> str:
     with open(path_file, "r", errors="ignore", encoding="utf-8") as file:
         content = file.read()
     return content
 
-def chunk_python_code(path, max_chunk_size=2000):
+
+def chunk_python_code(
+        path: str,
+        max_chunk_size: int = 2000
+) -> List[Dict[str, Any]]:
     chunks = []
     folder = Path(path)
     py_files = folder.rglob("*.py")
@@ -26,44 +32,56 @@ def chunk_python_code(path, max_chunk_size=2000):
                 if current:
                     if len(current) > max_chunk_size:
                         for i in range(0, len(current), max_chunk_size):
-                            piece = current[i:i+max_chunk_size]
-                            chunks.append({
-                                "file_path": str(file),
-                                "text": piece,
-                                "start": text.find(piece),
-                                "end": text.find(piece)+ len(piece)
-                            })
+                            piece = current[i: i + max_chunk_size]
+                            chunks.append(
+                                {
+                                    "file_path": str(file),
+                                    "text": piece,
+                                    "start": text.find(piece),
+                                    "end": text.find(piece) + len(piece),
+                                }
+                            )
                     else:
-                        chunks.append({
-                            "file_path": str(file),
-                            "text": current,
-                            "start": text.find(current),
-                            "end":  text.find(current)+ len(current)
-                        })
+                        chunks.append(
+                            {
+                                "file_path": str(file),
+                                "text": current,
+                                "start": text.find(current),
+                                "end": text.find(current) + len(current),
+                            }
+                        )
                 current = line
             else:
-                current += '\n' + line
+                current += "\n" + line
         current = current.strip()
         if current:
             if len(current) > max_chunk_size:
                 for i in range(0, len(current), max_chunk_size):
-                    piece = current[i:i+max_chunk_size]
-                    chunks.append({
-                        "file_path": str(file),
-                        "text": piece,
-                        "start": text.find(piece),
-                        "end": text.find(piece) + len(piece)
-                    })
+                    piece = current[i: i + max_chunk_size]
+                    chunks.append(
+                        {
+                            "file_path": str(file),
+                            "text": piece,
+                            "start": text.find(piece),
+                            "end": text.find(piece) + len(piece),
+                        }
+                    )
             else:
-                chunks.append({
-                    "file_path": str(file),
-                    "text": current,
-                    "start": text.find(current),
-                    "end": text.find(current) + len(current)
-                })
+                chunks.append(
+                    {
+                        "file_path": str(file),
+                        "text": current,
+                        "start": text.find(current),
+                        "end": text.find(current) + len(current),
+                    }
+                )
     return chunks
 
-def chunk_markedown(path, max_chunk_size=2000):
+
+def chunk_markedown(
+        path: str,
+        max_chunk_size: int = 2000
+) -> List[Dict[str, Any]]:
     chunks = []
     folder = Path(path)
     md_files = folder.rglob("*.md")
@@ -76,49 +94,59 @@ def chunk_markedown(path, max_chunk_size=2000):
                 if current:
                     if len(current) > max_chunk_size:
                         for i in range(0, len(current), max_chunk_size):
-                            piece = current[i:i+max_chunk_size]
-                            chunks.append({
-                                "file_path": str(file),
-                                "text": piece,
-                                "start": text.find(piece),
-                                "end": text.find(piece)+ len(piece)
-                            })
+                            piece = current[i: i + max_chunk_size]
+                            chunks.append(
+                                {
+                                    "file_path": str(file),
+                                    "text": piece,
+                                    "start": text.find(piece),
+                                    "end": text.find(piece) + len(piece),
+                                }
+                            )
                     else:
-                        chunks.append({
-                            "file_path": str(file),
-                            "text": current,
-                            "start": text.find(current),
-                            "end":  text.find(current)+ len(current)
-                        })
+                        chunks.append(
+                            {
+                                "file_path": str(file),
+                                "text": current,
+                                "start": text.find(current),
+                                "end": text.find(current) + len(current),
+                            }
+                        )
                 current = line
             else:
-                current += '\n' + line
+                current += "\n" + line
         current = current.strip()
         if current:
             if len(current) > max_chunk_size:
                 for i in range(0, len(current), max_chunk_size):
-                    piece = current[i:i+max_chunk_size]
-                    chunks.append({
-                        "file_path": str(file),
-                        "text": piece,
-                        "start": text.find(piece),
-                        "end": text.find(piece) + len(piece)
-                    })
+                    piece = current[i: i + max_chunk_size]
+                    chunks.append(
+                        {
+                            "file_path": str(file),
+                            "text": piece,
+                            "start": text.find(piece),
+                            "end": text.find(piece) + len(piece),
+                        }
+                    )
             else:
-                chunks.append({
-                    "file_path": str(file),
-                    "text": current,
-                    "start": text.find(current),
-                    "end": text.find(current) + len(current)
-                })
+                chunks.append(
+                    {
+                        "file_path": str(file),
+                        "text": current,
+                        "start": text.find(current),
+                        "end": text.find(current) + len(current),
+                    }
+                )
     return chunks
 
-def chunker(path, max_chunk_size=2000):
+
+def chunker(path: str, max_chunk_size: int = 2000) -> List[Dict[str, Any]]:
     chunks = []
     chunks += chunk_python_code(path, max_chunk_size)
     chunks += chunk_markedown(path, max_chunk_size)
     return chunks
 
-def save_chunks(chunks, output_path):
+
+def save_chunks(chunks: List[Dict[str, Any]], output_path: str) -> None:
     with open(output_path, "w") as file:
         json.dump(chunks, file, indent=2)

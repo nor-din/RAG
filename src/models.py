@@ -1,5 +1,6 @@
 import sys
 import uuid
+
 try:
     from pydantic import BaseModel, Field
 except (ModuleNotFoundError, ImportError):
@@ -15,8 +16,7 @@ class MinimalSource(BaseModel):
 
 
 class UnansweredQuestion(BaseModel):
-    question_id: str = Field(default_factory=lambda:
-    str(uuid.uuid4()))
+    question_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     question: str
 
 

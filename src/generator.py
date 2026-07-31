@@ -1,63 +1,85 @@
-import sys
 import json
+import sys
+from typing import Any, Dict, List
+
 try:
     import torch
-    from transformers import pipeline
     from tqdm import tqdm
+    from transformers import pipeline
 except (ModuleNotFoundError, ImportError):
     print("Module not installed")
     sys.exit(1)
-from src.models import StudentSearchResultsAndAnswer, MinimalAnswer, StudentSearchResults
+from src.models import (MinimalAnswer, StudentSearchResults,
+                        StudentSearchResultsAndAnswer)
 
 
-def load_chunk(path):
+def load_chunk(path: str) -> Any:
     with open(path, "r") as file:
         chunks = json.load(file)
     return chunks
 
-def load_model():
-    pipe =pipeline(
-        "text-generation",
-        model="Qwen/Qwen3-0.6B",
-        dtype=torch.float16
-    )
+
+def load_model() -> Any:
+    pipe = pipeline("text-generation", model="Qwen/Qwen3-0.6B",
+                    dtype=torch.float16)
     return pipe
 
-def genrate_answer(pipe, question, all_chunks ,chunks_retriever):
+
+def genrate_answer(
+    pipe: Any,
+    question: str,
+    all_chunks: List[Dict[str, Any]],
+    chunks_retriever: List[Dict[str, Any]],
+) -> str:
     context = []
 
     for results in chunks_retriever:
         for chunk in all_chunks:
-            if results['file_path'] == chunk['file_path'] and results['first_character_index'] == chunk['start']:
-                context.append(chunk['text'])
+            if (
+                results["file_path"] == chunk["file_path"]
+                and results["first_character_index"] == chunk["start"]
+            ):
+                context.append(chunk["text"])
                 break
-    perfect_chunks = '\n\n'.join(context)
+    perfect_chunks = "\n\n".join(context)
+    user_prompt = f"/no_think\nContext: {perfect_chunks}\nQuestion: {question}"
     prompt = [
         {"role": "system", "content": "Answer using only the context."},
-        {"role": "user", "content": f"/no_think\nContext: {perfect_chunks}\nQuestion: {question}"}
+        {
+            "role": "user",
+            "content": user_prompt,
+        },
     ]
     output = pipe(prompt, max_new_tokens=300)
-    assisant = output[0]['generated_text'][2]['content']
+    assisant = output[0]["generated_text"][2]["content"]
+    result1: str = assisant.split("</think>")[-1].strip()
+    result2: str = assisant.strip()
     if "</think>" in assisant:
-        return assisant.split("</think>")[-1].strip()
-    return assisant.strip()
+        return result1
+    return result2
 
-def genrate_dataset(pipe ,all_chunks, dataset_path, output_path, k=5):
+
+def genrate_dataset(
+    pipe: Any,
+    all_chunks: List[Dict[str, Any]],
+    dataset_path: str,
+    output_path: str,
+    k: int = 5,
+) -> None:
     all_results = []
     dataset = StudentSearchResults(**load_chunk(dataset_path))
     questions = dataset.search_results
     for query in tqdm(questions, desc="Generating answers"):
-        answer = genrate_answer(pipe, query.question, all_chunks, query.retrieved_sources)
+        answer = genrate_answer(
+            pipe, query.question, all_chunks, query.retrieved_sources
+        )
         results = MinimalAnswer(
             question_id=query.question_id,
             question=query.question,
             retrieved_sources=query.retrieved_sources,
-            answer=answer
+            answer=answer,
         )
-        all_results.append(results.model_dump())
-    output = StudentSearchResultsAndAnswer(
-        search_results=all_results,
-        k=k
-    )
-    with open(output_path, 'w') as file:
+        all_results.append(results)
+    output = StudentSearchResultsAndAnswer(search_results=all_results, k=k)
+    with open(output_path, "w") as file:
         json.dump(output.model_dump(), file, indent=2)
