@@ -1,8 +1,12 @@
+import sys
 import json
-import torch
-from transformers import pipeline
-from src.retriever import search
-from tqdm import tqdm
+try:
+    import torch
+    from transformers import pipeline
+    from tqdm import tqdm
+except (ModuleNotFoundError, ImportError):
+    print("Module not installed")
+    sys.exit(1)
 from src.models import StudentSearchResultsAndAnswer, MinimalAnswer, StudentSearchResults
 
 

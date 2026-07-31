@@ -1,5 +1,10 @@
+import sys
 import uuid
-from pydantic import BaseModel, Field
+try:
+    from pydantic import BaseModel, Field
+except (ModuleNotFoundError, ImportError):
+    print("Module not installed")
+    sys.exit(1)
 from typing import List
 
 

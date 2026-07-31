@@ -1,6 +1,11 @@
+import sys
 import json
 from src.bm25 import BM25
-from tqdm import tqdm
+try:
+    from tqdm import tqdm
+except (ModuleNotFoundError, ImportError):
+    print("Module not installed")
+    sys.exit(1)
 from src.models import MinimalSearchResults, MinimalSource, StudentSearchResults, RagDataset
 
 

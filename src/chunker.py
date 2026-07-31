@@ -1,6 +1,11 @@
+import sys
 import json
 from pathlib import Path
-from tqdm import tqdm
+try:
+    from tqdm import tqdm
+except (ModuleNotFoundError, ImportError):
+    print("Module not installed")
+    sys.exit(1)
 
 
 def read_file(path_file):
