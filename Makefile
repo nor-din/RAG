@@ -9,7 +9,7 @@ install:
 run:
 	HF_HOME="$$HOME/goinfre" \
 	UV_PROJECT_ENVIRONMENT="$$HOME/goinfre/rag-venv" \
-	python3 -m src $(ARG)
+	python3 src/semantic.py
 debug:
 	HF_HOME="$$HOME/goinfre" \
 	UV_PROJECT_ENVIRONMENT="$$HOME/goinfre/rag-venv" \
