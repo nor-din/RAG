@@ -6,7 +6,7 @@ from src.chunker import chunker, save_chunks
 from src.evaluation import evaluation
 from src.generator import (genrate_answer, genrate_dataset, load_chunk,
                            load_model)
-from src.indexer import indexer
+from src.incremental import incremental
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
 
@@ -14,6 +14,7 @@ REPO_PATH = "data/raw/vllm-0.10.1"
 CHUNKS_PATH = "data/processed/chunks.json"
 INDEX_PATH = "data/processed/bm25_index.json"
 EMBEDDINGS_PATH = "data/processed/embeddings.pt"
+TIME_PATH = "data/processed/time_files.json"
 
 
 class CLI:
@@ -27,7 +28,7 @@ class CLI:
                 return
             chunks = chunker(REPO_PATH, max_chunk_size)
             save_chunks(chunks, CHUNKS_PATH)
-            indexer(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH)
+            incremental(REPO_PATH,TIME_PATH,CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH, max_chunk_size)
         except Exception as e:
             print(f"Error indexing: {e}")
             sys.exit(1)
