@@ -13,6 +13,7 @@ from src.retriever import search_dataset as ft_search_dataset
 REPO_PATH = "data/raw/vllm-0.10.1"
 CHUNKS_PATH = "data/processed/chunks.json"
 INDEX_PATH = "data/processed/bm25_index.json"
+EMBEDDINGS_PATH = "data/processed/embeddings.pt"
 
 
 class CLI:
@@ -24,15 +25,9 @@ class CLI:
             if not os.path.exists(REPO_PATH):
                 print(f"Error: Repository not found at {REPO_PATH}")
                 return
-            if not os.path.exists(CHUNKS_PATH):
-                print(f"Error: Repository not found at {CHUNKS_PATH}")
-                return
-            if not os.path.exists(INDEX_PATH):
-                print(f"Error: Repository not found at {INDEX_PATH}")
-                return
             chunks = chunker(REPO_PATH, max_chunk_size)
             save_chunks(chunks, CHUNKS_PATH)
-            indexer(CHUNKS_PATH, INDEX_PATH)
+            indexer(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH)
         except Exception as e:
             print(f"Error indexing: {e}")
             sys.exit(1)
@@ -45,13 +40,16 @@ class CLI:
             if not os.path.exists(INDEX_PATH):
                 print(f"Error: Repository not found at {INDEX_PATH}")
                 return
+            if not os.path.exists(EMBEDDINGS_PATH):
+                print(f"Error: Repository not found at {EMBEDDINGS_PATH}")
+                return
             if k <= 0:
                 print("Error: k must be > 0")
                 return
-            result = ft_search(CHUNKS_PATH, INDEX_PATH, query, k)
             if not query or not query.strip():
                 print("Error: query cannot empty")
                 return
+            result = ft_search(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH,query, k)
             for r in result:
                 print(r)
         except Exception as e:
@@ -75,10 +73,13 @@ class CLI:
             if not os.path.exists(INDEX_PATH):
                 print(f"Error: Repository not found at {INDEX_PATH}")
                 return
+            if not os.path.exists(EMBEDDINGS_PATH):
+                print(f"Error: Repository not found at {EMBEDDINGS_PATH}")
+                return
             if k <= 0:
                 print("Error: k must be > 0")
                 return
-            ft_search_dataset(CHUNKS_PATH, INDEX_PATH,
+            ft_search_dataset(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH,
                               dataset_path, output_path, k)
         except Exception as e:
             print(f"Error searching dataset: {e}")
@@ -92,6 +93,9 @@ class CLI:
             if not os.path.exists(INDEX_PATH):
                 print(f"Error: Repository not found at {INDEX_PATH}")
                 return
+            if not os.path.exists(EMBEDDINGS_PATH):
+                print(f"Error: Repository not found at {EMBEDDINGS_PATH}")
+                return
             if k <= 0:
                 print("Error: k must be > 0")
                 return
@@ -99,7 +103,7 @@ class CLI:
                 print("Error: query cannot empty")
                 return
             pipe = load_model()
-            chunks_retriever = ft_search(CHUNKS_PATH, INDEX_PATH, query, k)
+            chunks_retriever = ft_search(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH, query, k)
             all_chunks = load_chunk(CHUNKS_PATH)
             answer = genrate_answer(pipe, query, all_chunks, chunks_retriever)
             print("----------------------------------------------------------")

@@ -1,6 +1,11 @@
-import torch
-import numpy as np
-from sentence_transformers import SentenceTransformer, util
+import sys
+try:
+    import torch
+    import numpy as np
+    from sentence_transformers import SentenceTransformer, util
+except (ModuleNotFoundError, ImportError):
+    print("Module not installed")
+    sys.exit(1)
 
 class Semantic:
     def __init__(self) -> None:
@@ -8,7 +13,7 @@ class Semantic:
         self.embeddings = None
 
     def index(self, texts):
-        self.embeddings = self.model.encode(texts)
+        self.embeddings = self.model.encode(texts, show_progress_bar=True)
 
     def search(self, query, k):
         vector_query = self.model.encode(query)

@@ -9,7 +9,11 @@ install:
 run:
 	HF_HOME="$$HOME/goinfre" \
 	UV_PROJECT_ENVIRONMENT="$$HOME/goinfre/rag-venv" \
-	python3 src/semantic.py
+	uv run python -m src search_dataset \
+    	--dataset_path data/datasets/UnansweredQuestions/dataset_code_public.json \
+    	--save_directory data/output/search_results/UnansweredQuestions \
+    	--k 10
+
 debug:
 	HF_HOME="$$HOME/goinfre" \
 	UV_PROJECT_ENVIRONMENT="$$HOME/goinfre/rag-venv" \

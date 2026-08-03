@@ -3,6 +3,8 @@ import sys
 from typing import Any, Dict, List
 
 from src.bm25 import BM25
+from src.semantic import Semantic
+from src.hybrid_retrieval import rrf
 
 try:
     from tqdm import tqdm
@@ -20,14 +22,18 @@ def load_json(path: str) -> Any:
 
 
 def search(
-    chunks_path: str, index_path: str, query: str, k: int = 5
+    chunks_path: str, index_path: str, embeddings_path: str, query: str, k: int = 5
 ) -> List[Dict[str, Any]]:
     chunks = load_json(chunks_path)
-    retrieve = BM25()
-    retrieve.load(index_path)
-    results = retrieve.searcher(query, k=k)
+    bm25 = BM25()
+    semantic = Semantic()
+    bm25.load(index_path)
+    semantic.load(embeddings_path)
+    idx_bm25 = [idx for _, idx in bm25.searcher(query, k=k)]
+    idx_semantic = semantic.search(query, k=k)
+    results = rrf(idx_bm25, idx_semantic, k)
     found: list = []
-    for _, idx in results:
+    for idx in results:
         source = MinimalSource(
             file_path=chunks[idx]["file_path"],
             first_character_index=chunks[idx]["start"],
@@ -40,6 +46,7 @@ def search(
 def search_dataset(
     chunks_path: str,
     index_path: str,
+    embeddings_path: str,
     dataset_path: str,
     output_path: str,
     k: int = 5
@@ -48,13 +55,27 @@ def search_dataset(
     dataset = RagDataset(**load_json(dataset_path))
     questions_dataset = dataset.rag_questions
     questions = [question for question in questions_dataset]
+    bm25 = BM25()
+    semantic = Semantic()
+    bm25.load(index_path)
+    semantic.load(embeddings_path)
+    chunks = load_json(chunks_path)
     for query in tqdm(questions, desc="Searching"):
-        results = search(chunks_path, index_path, query.question, k)
-        sources = [MinimalSource(**r) for r in results]
+        idx_bm25 = [idx for _, idx in bm25.searcher(query.question, k=k)]
+        idx_semantic = semantic.search(query.question, k=k)
+        results = rrf(idx_bm25, idx_semantic, k)
+        found: list = []
+        for idx in results:
+            source = MinimalSource(
+                file_path=chunks[idx]["file_path"],
+                first_character_index=chunks[idx]["start"],
+                last_character_index=chunks[idx]["end"],
+            )
+            found.append(source)
         search_result = MinimalSearchResults(
             question_id=query.question_id,
             question=query.question,
-            retrieved_sources=sources,
+            retrieved_sources=found,
         )
         all_results.append(search_result)
 
