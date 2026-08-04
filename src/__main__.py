@@ -6,7 +6,8 @@ from src.chunker import chunker, save_chunks
 from src.evaluation import evaluation
 from src.generator import (genrate_answer, genrate_dataset, load_chunk,
                            load_model)
-from src.incremental import incremental
+from src.incremental import incremental, save_times
+from src.indexer import indexer
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
 
@@ -28,11 +29,27 @@ class CLI:
                 return
             chunks = chunker(REPO_PATH, max_chunk_size)
             save_chunks(chunks, CHUNKS_PATH)
-            incremental(REPO_PATH,TIME_PATH,CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH, max_chunk_size)
+            indexer(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH)
+            save_times(REPO_PATH, TIME_PATH)
+            print("Full indexing complete!")
         except Exception as e:
             print(f"Error indexing: {e}")
             sys.exit(1)
 
+    def incremental_index(self, max_chunk_size: int = 2000) -> None:
+        try:
+            if not os.path.exists(CHUNKS_PATH):
+                print(f"Error: Repository not found at {CHUNKS_PATH}")
+                return
+            if not os.path.exists(TIME_PATH):
+                print("No timestamps found. Running full index.")
+                self.index(max_chunk_size)
+                return
+            incremental(REPO_PATH, TIME_PATH, CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH)
+            print("Incremental indexing complete!")
+        except Exception as e:
+            print(f"Error incremental: {e}")
+            sys.exit(1)
     def search(self, query: str, k: int = 10) -> None:
         try:
             if not os.path.exists(CHUNKS_PATH):

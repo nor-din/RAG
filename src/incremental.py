@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 from pathlib import Path
 from src.chunker import chunk_python_code, chunk_markedown
@@ -31,8 +32,11 @@ def incremental(repo_path, times_path, chunk_path, index_path ,embeddings_path,m
     saved_files = get_changed(repo_path, times_path)
     clean_chunks = [
         chunk for chunk in old_chunks
-        if chunk['file_path'] not in saved_files
+        if chunk['file_path'] in saved_files
     ]
+    if not saved_files:
+        print("No files changed. Index is up to date!")
+        sys.exit(1)
     for file in saved_files:
         if file.endswith(".py"):
             chunk = chunk_python_code(file, max_chunk_size)
