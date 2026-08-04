@@ -22,13 +22,9 @@ def load_json(path: str) -> Any:
 
 
 def search(
-    chunks_path: str, index_path: str, embeddings_path: str, query: str, k: int = 5
+    chunks_path: str, bm25, semantic, query: str, k: int = 5
 ) -> List[Dict[str, Any]]:
     chunks = load_json(chunks_path)
-    bm25 = BM25()
-    semantic = Semantic()
-    bm25.load(index_path)
-    semantic.load(embeddings_path)
     idx_bm25 = [idx for _, idx in bm25.searcher(query, k=k)]
     idx_semantic = semantic.search(query, k=k)
     results = rrf(idx_bm25, idx_semantic, k)

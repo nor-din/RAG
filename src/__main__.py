@@ -10,15 +10,22 @@ from src.incremental import incremental, save_times
 from src.indexer import indexer
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
+from src.cache import Cache
 
 REPO_PATH = "data/raw/vllm-0.10.1"
 CHUNKS_PATH = "data/processed/chunks.json"
 INDEX_PATH = "data/processed/bm25_index.json"
 EMBEDDINGS_PATH = "data/processed/embeddings.pt"
 TIME_PATH = "data/processed/time_files.json"
+CACHE_PATH = "data/processed/query_cache.json"
 
 
 class CLI:
+    def __init__(self) -> None:
+        self.cache = Cache()
+        if os.path.exists(CACHE_PATH):
+            self.cache.load(CACHE_PATH)
+
     def index(self, max_chunk_size: int = 2000) -> None:
         try:
             if max_chunk_size <= 0:
@@ -67,7 +74,8 @@ class CLI:
             if not query or not query.strip():
                 print("Error: query cannot empty")
                 return
-            result = ft_search(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH,query, k)
+            result = self.cache.cache_query(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH, query, k)
+            self.cache.save(CACHE_PATH)
             for r in result:
                 print(r)
         except Exception as e:
