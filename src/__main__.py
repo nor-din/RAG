@@ -11,6 +11,7 @@ from src.indexer import indexer
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
 from src.cache import Cache
+import uvicorn 
 
 REPO_PATH = "data/raw/vllm-0.10.1"
 CHUNKS_PATH = "data/processed/chunks.json"
@@ -129,7 +130,8 @@ class CLI:
                 print("Error: query cannot empty")
                 return
             pipe = load_model()
-            chunks_retriever = ft_search(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH, query, k)
+            bm25, semantic = self.cache.get_index(INDEX_PATH, EMBEDDINGS_PATH)
+            chunks_retriever = ft_search(CHUNKS_PATH, bm25, semantic, query, k)
             all_chunks = load_chunk(CHUNKS_PATH)
             answer = genrate_answer(pipe, query, all_chunks, chunks_retriever)
             print("----------------------------------------------------------")
@@ -175,7 +177,8 @@ class CLI:
         except Exception as e:
             print(f"Error answer dataset: {e}")
             sys.exit(1)
-
+    def http_api(self):
+        uvicorn.run("src.api:app")
 
 if __name__ == "__main__":
     fire.Fire(CLI)

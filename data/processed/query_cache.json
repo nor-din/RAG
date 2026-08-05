@@ -1,0 +1,29 @@
+{
+  "\"how to install vllm\"-5": [
+    {
+      "file_path": "data/raw/vllm-0.10.1/docs/getting_started/installation/gpu/cuda.inc.md",
+      "first_character_index": 7738,
+      "last_character_index": 7893
+    },
+    {
+      "file_path": "data/raw/vllm-0.10.1/docs/features/quantization/int4.md",
+      "first_character_index": 579,
+      "last_character_index": 892
+    },
+    {
+      "file_path": "data/raw/vllm-0.10.1/docs/deployment/frameworks/streamlit.md",
+      "first_character_index": 325,
+      "last_character_index": 367
+    },
+    {
+      "file_path": "data/raw/vllm-0.10.1/docs/features/quantization/int8.md",
+      "first_character_index": 562,
+      "last_character_index": 875
+    },
+    {
+      "file_path": "data/raw/vllm-0.10.1/docs/deployment/frameworks/anything-llm.md",
+      "first_character_index": 371,
+      "last_character_index": 413
+    }
+  ]
+}

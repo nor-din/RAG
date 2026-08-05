@@ -9,7 +9,7 @@ install:
 run:
 	HF_HOME="$$HOME/goinfre" \
 	UV_PROJECT_ENVIRONMENT="$$HOME/goinfre/rag-venv" \
-	uv run python -m src incremental_index
+	uv run python3 -m src $(ARG)
 debug:
 	HF_HOME="$$HOME/goinfre" \
 	UV_PROJECT_ENVIRONMENT="$$HOME/goinfre/rag-venv" \

@@ -35,7 +35,7 @@ def search(
             first_character_index=chunks[idx]["start"],
             last_character_index=chunks[idx]["end"],
         )
-        found.append(source)
+        found.append(dict(source))
     return found
 
 
