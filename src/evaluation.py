@@ -14,7 +14,7 @@ def calculat_overlap(start1: int, end1: int, start2: int, end2: int) -> int:
 
 
 def evaluation(
-    student_search_results_path: str, dataset_path: str, k: int = 10
+    student_search_results_path: str, dataset_path: str, k: int,
 ) -> float:
     total = 0
     correct = 0

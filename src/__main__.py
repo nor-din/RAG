@@ -1,17 +1,20 @@
+"""CLI entrypoint for the RAG project."""
+
 import os
 import sys
+
 import fire
 
+from src.cache import Cache
 from src.chunker import chunker, save_chunks
 from src.evaluation import evaluation
 from src.generator import (genrate_answer, genrate_dataset, load_chunk,
                            load_model)
-from src.incremental import incremental, save_times
 from src.indexer import indexer
+from src.incremental import incremental, save_times
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
-from src.cache import Cache
-import uvicorn 
+import uvicorn
 
 REPO_PATH = "data/raw/vllm-0.10.1"
 CHUNKS_PATH = "data/processed/chunks.json"
@@ -22,6 +25,8 @@ CACHE_PATH = "data/processed/query_cache.json"
 
 
 class CLI:
+    """Command-line interface for indexing, retrieval, and generation."""
+
     def __init__(self) -> None:
         self.cache = Cache()
         if os.path.exists(CACHE_PATH):
@@ -45,6 +50,7 @@ class CLI:
             sys.exit(1)
 
     def incremental_index(self, max_chunk_size: int = 2000) -> None:
+        """Run incremental re-indexing for changed files."""
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
@@ -53,12 +59,21 @@ class CLI:
                 print("No timestamps found. Running full index.")
                 self.index(max_chunk_size)
                 return
-            incremental(REPO_PATH, TIME_PATH, CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH)
+            incremental(
+                REPO_PATH,
+                TIME_PATH,
+                CHUNKS_PATH,
+                INDEX_PATH,
+                EMBEDDINGS_PATH,
+                max_chunk_size,
+            )
             print("Incremental indexing complete!")
         except Exception as e:
             print(f"Error incremental: {e}")
             sys.exit(1)
-    def search(self, query: str, k: int = 10) -> None:
+
+    def search(self, query: str, k: int) -> None:
+        """Search the index for a single query and print the results."""
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
@@ -73,9 +88,15 @@ class CLI:
                 print("Error: k must be > 0")
                 return
             if not query or not query.strip():
-                print("Error: query cannot empty")
+                print("Error: query cannot be empty")
                 return
-            result = self.cache.cache_query(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH, query, k)
+            result = self.cache.cache_query(
+                CHUNKS_PATH,
+                INDEX_PATH,
+                EMBEDDINGS_PATH,
+                query,
+                k,
+            )
             self.cache.save(CACHE_PATH)
             for r in result:
                 print(r)
@@ -86,10 +107,10 @@ class CLI:
     def search_dataset(
         self,
         dataset_path: str,
+        k: int,
         save_directory: str = "data/output/search_results",
-        k: int = 10,
     ) -> None:
-
+        """Run dataset search and write StudentSearchResults output."""
         try:
             os.makedirs(save_directory, exist_ok=True)
             file_name = os.path.basename(dataset_path)
@@ -106,13 +127,19 @@ class CLI:
             if k <= 0:
                 print("Error: k must be > 0")
                 return
-            ft_search_dataset(CHUNKS_PATH, INDEX_PATH, EMBEDDINGS_PATH,
-                              dataset_path, output_path, k)
+            ft_search_dataset(
+                CHUNKS_PATH,
+                INDEX_PATH,
+                EMBEDDINGS_PATH,
+                dataset_path,
+                output_path,
+                k,
+            )
         except Exception as e:
             print(f"Error searching dataset: {e}")
             sys.exit(1)
 
-    def answer(self, query: str, k: int = 10) -> None:
+    def answer(self, query: str, k: int) -> None:
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
@@ -127,14 +154,30 @@ class CLI:
                 print("Error: k must be > 0")
                 return
             if not query or not query.strip():
-                print("Error: query cannot empty")
+                print("Error: query cannot be empty")
                 return
             pipe = load_model()
-            bm25, semantic = self.cache.get_index(INDEX_PATH, EMBEDDINGS_PATH)
-            chunks_retriever = ft_search(CHUNKS_PATH, bm25, semantic, query, k)
+            bm25, semantic = self.cache.get_index(
+                INDEX_PATH,
+                EMBEDDINGS_PATH,
+            )
+            chunks_retriever = ft_search(
+                CHUNKS_PATH,
+                bm25,
+                semantic,
+                query,
+                k,
+            )
             all_chunks = load_chunk(CHUNKS_PATH)
-            answer = genrate_answer(pipe, query, all_chunks, chunks_retriever)
-            print("----------------------------------------------------------")
+            answer = genrate_answer(
+                pipe,
+                query,
+                all_chunks,
+                chunks_retriever,
+            )
+            print(
+                "----------------------------------------------------------"
+            )
             print(answer)
         except Exception as e:
             print(f"Error answer: {e}")
@@ -143,9 +186,11 @@ class CLI:
     def answer_dataset(
         self,
         student_search_results_path: str,
+        k: int,
         save_directory: str = "data/output/search_results_and_answer",
-        k: int = 10,
     ) -> None:
+        """Generate answers for a dataset and
+        save JSON output."""
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
@@ -159,26 +204,40 @@ class CLI:
             pipe = load_model()
             all_chunks = load_chunk(CHUNKS_PATH)
             genrate_dataset(
-                pipe, all_chunks, student_search_results_path, output_path, k
+                pipe,
+                all_chunks,
+                student_search_results_path,
+                output_path,
+                k,
             )
-            print(f"Saved student_search_results to {output_path}")
+            print(
+                f"Saved student_search_results to {output_path}"
+            )
         except Exception as e:
             print(f"Error answer dataset: {e}")
             sys.exit(1)
 
     def evaluate(
-        self, student_search_results_path: str, dataset_path: str, k: int = 10
+        self,
+        student_search_results_path: str,
+        dataset_path: str,
+        k: int,
     ) -> None:
+        """Evaluate recall metrics for a given search results file and
+        ground-truth dataset."""
         try:
             if k <= 0:
                 print("Error: k must be > 0")
                 return
             evaluation(student_search_results_path, dataset_path, k)
         except Exception as e:
-            print(f"Error answer dataset: {e}")
+            print(f"Error evaluating dataset: {e}")
             sys.exit(1)
-    def http_api(self):
+
+    def http_api(self) -> None:
+        """Launch the HTTP API for search and answer endpoints."""
         uvicorn.run("src.api:app")
+
 
 if __name__ == "__main__":
     fire.Fire(CLI)

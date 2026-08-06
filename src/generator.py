@@ -64,7 +64,7 @@ def genrate_dataset(
     all_chunks: List[Dict[str, Any]],
     dataset_path: str,
     output_path: str,
-    k: int = 5,
+    k: int,
 ) -> None:
     all_results = []
     dataset = StudentSearchResults(**load_chunk(dataset_path))

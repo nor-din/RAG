@@ -1,3 +1,5 @@
+"""Chunk source files into smaller Python and Markdown pieces for retrieval."""
+
 import json
 import sys
 from pathlib import Path
@@ -11,15 +13,17 @@ from typing import Any, Dict, List
 
 
 def read_file(path_file: Path) -> str:
+    """Read file content from a path as UTF-8 text."""
     with open(path_file, "r", errors="ignore", encoding="utf-8") as file:
         content = file.read()
     return content
 
 
 def chunk_python_code(
-        path: str,
-        max_chunk_size: int = 2000
+    path: str,
+    max_chunk_size: int = 2000,
 ) -> List[Dict[str, Any]]:
+    """Chunk Python files under a path into blocks smaller than the limit."""
     chunks = []
     folder = Path(path)
     py_files = folder.rglob("*.py")
@@ -79,9 +83,10 @@ def chunk_python_code(
 
 
 def chunk_markedown(
-        path: str,
-        max_chunk_size: int = 2000
+    path: str,
+    max_chunk_size: int = 2000,
 ) -> List[Dict[str, Any]]:
+    """Chunk Markdown files under a path into blocks smaller than the limit."""
     chunks = []
     folder = Path(path)
     md_files = folder.rglob("*.md")
@@ -141,6 +146,7 @@ def chunk_markedown(
 
 
 def chunker(path: str, max_chunk_size: int = 2000) -> List[Dict[str, Any]]:
+    """Chunk files under path into Python and Markdown pieces."""
     chunks = []
     chunks += chunk_python_code(path, max_chunk_size)
     chunks += chunk_markedown(path, max_chunk_size)
@@ -148,5 +154,6 @@ def chunker(path: str, max_chunk_size: int = 2000) -> List[Dict[str, Any]]:
 
 
 def save_chunks(chunks: List[Dict[str, Any]], output_path: str) -> None:
+    """Save a list of chunk dictionaries to a JSON file."""
     with open(output_path, "w") as file:
         json.dump(chunks, file, indent=2)

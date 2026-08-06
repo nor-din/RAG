@@ -94,7 +94,7 @@ class BM25:
         bm25 = idf * (up / down)
         return bm25
 
-    def searcher(self, query: str, k: int = 10) -> List[Tuple[float, int]]:
+    def searcher(self, query: str, k: int) -> List[Tuple[float, int]]:
         token_query = self.tokenize(query)
         scores = []
         i = 0

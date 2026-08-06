@@ -1,3 +1,9 @@
-.venv
-bm25_index
-.mypy_cache
+.venv/
+__pycache__/
+*.py[cod]
+pip-wheel-metadata/
+.python-version
+env/
+.mypy_cache/
+data/output/
+

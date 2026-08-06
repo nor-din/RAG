@@ -22,7 +22,11 @@ def load_json(path: str) -> Any:
 
 
 def search(
-    chunks_path: str, bm25, semantic, query: str, k: int = 5
+    chunks_path: str,
+    bm25: BM25,
+    semantic: Semantic,
+    query: str,
+    k: int,
 ) -> List[Dict[str, Any]]:
     chunks = load_json(chunks_path)
     idx_bm25 = [idx for _, idx in bm25.searcher(query, k=k)]
@@ -45,7 +49,7 @@ def search_dataset(
     embeddings_path: str,
     dataset_path: str,
     output_path: str,
-    k: int = 5
+    k: int,
 ) -> None:
     all_results = []
     dataset = RagDataset(**load_json(dataset_path))
