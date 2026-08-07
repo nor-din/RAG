@@ -1,3 +1,5 @@
+import sys
+import re
 import json
 from typing import Any, Dict, Tuple
 
@@ -24,8 +26,6 @@ class Cache:
         if self.semantic is None:
             self.semantic = Semantic()
             self.semantic.load(embeddings_path)
-        assert self.bm25 is not None
-        assert self.semantic is not None
         return self.bm25, self.semantic
 
     def cache_query(
@@ -37,7 +37,8 @@ class Cache:
         k: int,
     ) -> Any:
         """Search with caching for repeated query requests."""
-        key = f"{query}-{k}"
+        clean_query = re.sub(r"[^\w\s]", "", query)
+        key = f"{' '.join(clean_query.lower().strip())}-{k}"
         if key in self.query_cached:
             print("query founded in cache")
             return self.query_cached[key]
@@ -55,5 +56,9 @@ class Cache:
 
     def load(self, path: str) -> None:
         """Load a saved cache map from disk."""
-        with open(path, "r", encoding="utf-8") as file:
-            self.query_cached = json.load(file)
+        try:
+            with open(path, "r", encoding="utf-8") as file:
+                self.query_cached = json.load(file)
+        except json.JSONDecodeError as e:
+            print(f"Invalid JSON: {e}")
+            sys.exit(1)

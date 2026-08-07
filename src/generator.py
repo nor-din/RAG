@@ -14,12 +14,18 @@ from src.models import (MinimalAnswer, StudentSearchResults,
 
 
 def load_chunk(path: str) -> Any:
-    with open(path, "r") as file:
-        chunks = json.load(file)
+    """Load chunks from a JSON file."""
+    try:
+        with open(path, "r") as file:
+            chunks = json.load(file)
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON: {e}")
+        sys.exit(1)
     return chunks
 
 
 def load_model() -> Any:
+    """Load the text generation model."""
     pipe = pipeline("text-generation", model="Qwen/Qwen3-0.6B",
                     dtype=torch.float16)
     return pipe
@@ -31,6 +37,7 @@ def genrate_answer(
     all_chunks: List[Dict[str, Any]],
     chunks_retriever: List[Dict[str, Any]],
 ) -> str:
+    """Generate an answer using retrieved chunks."""
     context = []
 
     for results in chunks_retriever:
@@ -66,6 +73,7 @@ def genrate_dataset(
     output_path: str,
     k: int,
 ) -> None:
+    """Generate answers for a dataset and save results."""
     all_results = []
     dataset = StudentSearchResults(**load_chunk(dataset_path))
     questions = dataset.search_results

@@ -5,6 +5,7 @@ indexes for retrieval.
 """
 
 import json
+import sys
 from typing import Any
 
 from src.bm25 import BM25
@@ -21,7 +22,11 @@ def load_chunk(path: str) -> Any:
         The parsed JSON content representing document chunks.
     """
     with open(path, "r") as file:
-        chunks = json.load(file)
+        try:
+            chunks = json.load(file)
+        except json.JSONDecodeError as e:
+            print(f"Invalid JSON: {e}")
+            sys.exit(1)
     return chunks
 
 

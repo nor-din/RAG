@@ -16,8 +16,12 @@ from src.models import (MinimalSearchResults, MinimalSource, RagDataset,
 
 
 def load_json(path: str) -> Any:
-    with open(path, "r") as file:
-        content = json.load(file)
+    try:
+        with open(path, "r") as file:
+            content = json.load(file)
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON: {e}")
+        sys.exit(1)
     return content
 
 
@@ -39,7 +43,7 @@ def search(
             first_character_index=chunks[idx]["start"],
             last_character_index=chunks[idx]["end"],
         )
-        found.append(dict(source))
+        found.append(source.model_dump())
     return found
 
 

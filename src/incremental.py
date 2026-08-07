@@ -70,9 +70,10 @@ def incremental(
         elif file.endswith(".md"):
             chunk = chunk_markedown(file, max_chunk_size)
             clean_chunks += chunk
-
+    if not clean_chunks:
+        print("No chunks found")
+        sys.exit(1)
     with open(chunk_path, "w", encoding="utf-8") as f:
         json.dump(clean_chunks, f, indent=2)
-
     indexer(chunk_path, index_path, embeddings_path)
     save_times(repo_path, times_path)

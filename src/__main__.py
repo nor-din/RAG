@@ -14,7 +14,11 @@ from src.indexer import indexer
 from src.incremental import incremental, save_times
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
-import uvicorn
+try:
+    import uvicorn
+except (ModuleNotFoundError, ImportError):
+    print("Module not installed")
+    sys.exit(1)
 
 REPO_PATH = "data/raw/vllm-0.10.1"
 CHUNKS_PATH = "data/processed/chunks.json"
@@ -33,6 +37,7 @@ class CLI:
             self.cache.load(CACHE_PATH)
 
     def index(self, max_chunk_size: int = 2000) -> None:
+        """Create document chunks and build the search index."""
         try:
             if max_chunk_size <= 0:
                 print("Error: max_chunk_size must be > 0")
@@ -140,6 +145,8 @@ class CLI:
             sys.exit(1)
 
     def answer(self, query: str, k: int) -> None:
+        """Generate and print an answer for a user
+        query using retrieved chunks."""
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
@@ -236,8 +243,19 @@ class CLI:
 
     def http_api(self) -> None:
         """Launch the HTTP API for search and answer endpoints."""
-        uvicorn.run("src.api:app")
+        try:
+            uvicorn.run("src.api:app")
+        except Exception as e:
+            print(f"Error HTTP API: {e}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
-    fire.Fire(CLI)
+    try:
+        fire.Fire(CLI)
+    except KeyboardInterrupt:
+        print("exit by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)

@@ -1,11 +1,14 @@
 """HTTP API wrapper for RAG search and answer endpoints."""
 
 import os
+import sys
 
 from typing import Any, Dict, List
-
-from fastapi import FastAPI, HTTPException
-
+try:
+    from fastapi import FastAPI, HTTPException
+except (ModuleNotFoundError, ImportError):
+    print("Module not installed")
+    sys.exit(1)
 from src.cache import Cache
 from src.generator import genrate_answer, load_chunk, load_model
 
@@ -25,7 +28,7 @@ app = FastAPI()
 @app.get("/")
 def root() -> str:
     """Return a short API homepage description."""
-    return "/search  → find relevant chunks\n/answer  → generate answer"
+    return "/search  → find relevant chunks | /answer  → generate answer"
 
 
 @app.get("/search")

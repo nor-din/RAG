@@ -1,3 +1,4 @@
+import sys
 import json
 import math
 import re
@@ -5,6 +6,7 @@ from typing import List, Tuple
 
 
 class BM25:
+    """BM25 text retrieval model."""
     def __init__(self) -> None:
         self.k1: float = 1.5
         self.b: float = 0.75
@@ -64,6 +66,7 @@ class BM25:
         }
 
     def tokenize(self, text: str) -> List[str]:
+        """Convert text into tokens."""
         clean_text = re.sub(r"[^\w\s]", " ", text)
         words = clean_text.lower().split()
         tokens = [w for w in words if w not in self.STOPWORDS]
@@ -72,6 +75,7 @@ class BM25:
         return tokens
 
     def index(self, texts: List[str]) -> None:
+        """Create the BM25 index."""
         self.corpus = [self.tokenize(text) for text in texts]
         self.avgdl = sum(len(doc) for doc in self.corpus) / len(self.corpus)
         counter = {}
@@ -89,12 +93,14 @@ class BM25:
             self.idf[term] = math.log((n - df + 0.5) / (df + 0.5) + 1)
 
     def calculate_bm25(self, tf: float, idf: float, dl: int) -> float:
+        """Calculate BM25 score."""
         up = tf * (self.k1 + 1)
         down = tf + self.k1 * (1 - self.b + self.b * dl / self.avgdl)
         bm25 = idf * (up / down)
         return bm25
 
     def searcher(self, query: str, k: int) -> List[Tuple[float, int]]:
+        """Search documents using BM25."""
         token_query = self.tokenize(query)
         scores = []
         i = 0
@@ -110,13 +116,19 @@ class BM25:
         return result[:k]
 
     def save(self, path: str) -> None:
+        """Save BM25 data to a JSON file."""
         data = {"idf": self.idf, "avgdf": self.avgdl, "corpus": self.corpus}
         with open(path, "w", encoding="utf-8", errors="ignore") as file:
             json.dump(data, file, indent=2)
 
     def load(self, path: str) -> None:
-        with open(path, "r") as file:
-            content = json.load(file)
-        self.idf = content["idf"]
-        self.avgdl = content["avgdf"]
-        self.corpus = content["corpus"]
+        """Load BM25 data from a JSON file."""
+        try:
+            with open(path, "r") as file:
+                content = json.load(file)
+            self.idf = content["idf"]
+            self.avgdl = content["avgdf"]
+            self.corpus = content["corpus"]
+        except json.JSONDecodeError as e:
+            print(f"Invalid JSON: {e}")
+            sys.exit(1)

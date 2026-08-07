@@ -26,7 +26,7 @@ def chunk_python_code(
     """Chunk Python files under a path into blocks smaller than the limit."""
     chunks = []
     folder = Path(path)
-    py_files = folder.rglob("*.py")
+    py_files = list(folder.rglob("*.py"))
     for file in tqdm(py_files, desc="Chunking py files"):
         text = read_file(file)
         current = ""
@@ -89,7 +89,7 @@ def chunk_markedown(
     """Chunk Markdown files under a path into blocks smaller than the limit."""
     chunks = []
     folder = Path(path)
-    md_files = folder.rglob("*.md")
+    md_files = list(folder.rglob("*.md"))
     for file in tqdm(md_files, desc="Chunking md files"):
         text = read_file(file)
         current = ""
