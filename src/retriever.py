@@ -2,7 +2,7 @@ import json
 import sys
 from typing import Any, Dict, List
 
-from src.bm25 import BM25
+from src.tfidf import TFIDF
 from src.semantic import Semantic
 from src.hybrid_retrieval import rrf
 
@@ -27,15 +27,15 @@ def load_json(path: str) -> Any:
 
 def search(
     chunks_path: str,
-    bm25: BM25,
+    tfidf: TFIDF,
     semantic: Semantic,
     query: str,
     k: int,
 ) -> List[Dict[str, Any]]:
     chunks = load_json(chunks_path)
-    idx_bm25 = [idx for _, idx in bm25.searcher(query, k=k)]
+    idx_tfidf = [idx for _, idx in tfidf.searcher(query, k=k)]
     idx_semantic = semantic.search(query, k=k)
-    results = rrf(idx_bm25, idx_semantic, k)
+    results = rrf(idx_tfidf, idx_semantic, k)
     found: list = []
     for idx in results:
         source = MinimalSource(
@@ -59,15 +59,15 @@ def search_dataset(
     dataset = RagDataset(**load_json(dataset_path))
     questions_dataset = dataset.rag_questions
     questions = [question for question in questions_dataset]
-    bm25 = BM25()
+    tfidf = TFIDF()
     semantic = Semantic()
-    bm25.load(index_path)
+    tfidf.load(index_path)
     semantic.load(embeddings_path)
     chunks = load_json(chunks_path)
     for query in tqdm(questions, desc="Searching"):
-        idx_bm25 = [idx for _, idx in bm25.searcher(query.question, k=k)]
+        idx_tfidf = [idx for _, idx in tfidf.searcher(query.question, k=k)]
         idx_semantic = semantic.search(query.question, k=k)
-        results = rrf(idx_bm25, idx_semantic, k)
+        results = rrf(idx_tfidf, idx_semantic, k)
         found: list = []
         for idx in results:
             source = MinimalSource(

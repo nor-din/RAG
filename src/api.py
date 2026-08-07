@@ -13,7 +13,7 @@ from src.cache import Cache
 from src.generator import genrate_answer, load_chunk, load_model
 
 CHUNKS_PATH = "data/processed/chunks.json"
-INDEX_PATH = "data/processed/bm25_index.json"
+INDEX_PATH = "data/processed/tfidf_index.json"
 EMBEDDINGS_PATH = "data/processed/embeddings.pt"
 CACHE_PATH = "data/processed/query_cache.json"
 

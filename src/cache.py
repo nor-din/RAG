@@ -3,7 +3,7 @@ import re
 import json
 from typing import Any, Dict, Tuple
 
-from src.bm25 import BM25
+from src.tfidf import TFIDF
 from src.retriever import search
 from src.semantic import Semantic
 
@@ -13,20 +13,20 @@ class Cache:
 
     def __init__(self) -> None:
         self.query_cached: Dict[str, Any] = {}
-        self.bm25: BM25 | None = None
+        self.tfidf: TFIDF | None = None
         self.semantic: Semantic | None = None
 
     def get_index(
         self, index_path: str, embeddings_path: str
-    ) -> Tuple[BM25, Semantic]:
+    ) -> Tuple[TFIDF, Semantic]:
         """Load and cache index objects from disk."""
-        if self.bm25 is None:
-            self.bm25 = BM25()
-            self.bm25.load(index_path)
+        if self.tfidf is None:
+            self.tfidf = TFIDF()
+            self.tfidf.load(index_path)
         if self.semantic is None:
             self.semantic = Semantic()
             self.semantic.load(embeddings_path)
-        return self.bm25, self.semantic
+        return self.tfidf, self.semantic
 
     def cache_query(
         self,
@@ -44,8 +44,8 @@ class Cache:
             return self.query_cached[key]
 
         print("Cache miss. Searching...")
-        bm25, semantic = self.get_index(index_path, embeddings_path)
-        result = search(chunks_path, bm25, semantic, query, k)
+        tfidf, semantic = self.get_index(index_path, embeddings_path)
+        result = search(chunks_path, tfidf, semantic, query, k)
         self.query_cached[key] = result
         return self.query_cached[key]
 
