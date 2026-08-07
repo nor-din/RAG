@@ -13,12 +13,12 @@ The project is built as a small research pipeline that demonstrates hybrid retri
 The system is composed of the following components:
 
 - `src/chunker.py`: splits code and Markdown content into smaller chunks for retrieval.
-- `src/bm25.py`: builds a lexical BM25 index over chunk text.
+- `src/tfidf.py`: builds a lexical TF-IDF index over chunk text.
 - `src/semantic.py`: computes semantic embeddings using SentenceTransformers.
-- `src/hybrid_retrieval.py`: ranks BM25 and semantic results using Reciprocal Rank Fusion (RRF).
+- `src/hybrid_retrieval.py`: ranks TF-IDF and semantic results using Reciprocal Rank Fusion (RRF).
 - `src/retriever.py`: orchestrates query execution, retrieves top candidates, and formats results.
 - `src/cache.py`: caches index objects and repeated query results.
-- `src/indexer.py`: builds and saves both BM25 and semantic indexes.
+- `src/indexer.py`: builds and saves both TF-IDF and semantic indexes.
 - `src/generator.py`: loads data, generates answers using retrieved context, and supports dataset answer generation.
 - `src/incremental.py`: detects changed files and updates chunks/indexes incrementally.
 - `src/api.py`: exposes HTTP endpoints for search and answer requests.
@@ -27,8 +27,8 @@ The system is composed of the following components:
 ### Interaction flow
 
 1. The chunker reads source files and Markdown files.
-2. The indexer builds a BM25 index and semantic embeddings from chunk text.
-3. A query is executed through the retriever, which calls BM25 and semantic search.
+2. The indexer builds a TF-IDF index and semantic embeddings from chunk text.
+3. A query is executed through the retriever, which calls TF-IDF and semantic search.
 4. Hybrid ranking fuses both results into an ordered candidate list.
 5. The generator uses retrieved chunks as context to produce an answer.
 6. The API and CLI expose the search and answer functionality to users.
@@ -47,9 +47,9 @@ This strategy balances granularity and context preservation, making retrieval re
 
 Retrieval is hybrid and composed of two complementary algorithms:
 
-- **BM25**: a classical lexical ranking algorithm implemented in `src/bm25.py`. BM25 scores chunks based on token overlap and term frequency.
+- **TF-IDF**: a classical lexical ranking algorithm implemented in `src/tfidf.py`. TF-IDF scores chunks based on term frequency and inverse document frequency.
 - **Semantic search**: embedding-based retrieval implemented in `src/semantic.py` using SentenceTransformers. It ranks chunks by cosine similarity in embedding space.
-- **Reciprocal Rank Fusion (RRF)**: `src/hybrid_retrieval.py` merges BM25 and semantic rankings. RRF improves robustness by combining different ranking signals rather than relying on a single model.
+- **Reciprocal Rank Fusion (RRF)**: `src/hybrid_retrieval.py` merges TF-IDF and semantic rankings. RRF improves robustness by combining different ranking signals rather than relying on a single model.
 
 The final retrieval set is the best mix of lexical precision and semantic relevance.
 
@@ -61,7 +61,7 @@ The project includes an evaluation path to compute recall metrics.
 - `k` controls how many top results are considered for recall.
 - System performance depends on corpus size, embedding generation time, and model inference cost.
 
-In practice, BM25 is fast for lexical lookups, while semantic indexing requires more time and memory for embedding generation. The hybrid method is intended to better capture relevance than either method alone.
+In practice, TF-IDF is fast for lexical lookups, while semantic indexing requires more time and memory for embedding generation. The hybrid method is intended to better capture relevance than either method alone.
 
 ## Design Decisions
 
@@ -103,7 +103,7 @@ make install
 
 ### Indexing
 
-Build chunks, BM25 index, and semantic embeddings:
+Build chunks, TF-IDF index, and semantic embeddings:
 
 ```bash
 make run ARG=" index --max_chunk_size=2000"
@@ -122,7 +122,7 @@ make run ARG="incremental_index --max_chunk_size=2000"
 Run a search query:
 
 ```bash
-make run ARG="search --query='What is BM25?' --k=10"
+make run ARG="search --query='What is TF-IDF?' --k=10"
 ```
 
 ### Answer
@@ -178,7 +178,7 @@ curl "http://127.0.0.1:8000/search?query=source+code&k=5"
 
 ## Resources
 
-- BM25 algorithm: https://en.wikipedia.org/wiki/Okapi_BM25
+- TF-IDF algorithm: https://en.wikipedia.org/wiki/Tf%E2%80%93idf
 - SentenceTransformers: https://www.sbert.net/
 - FastAPI documentation: https://fastapi.tiangolo.com/
 - Python `fire`: https://github.com/google/python-fire

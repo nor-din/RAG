@@ -6,7 +6,7 @@ from typing import List, Tuple
 
 
 class TFIDF:
-    """BM25 text retrieval model."""
+    """Lexical text retrieval model that ranks documents with TF-IDF scoring."""
     def __init__(self) -> None:
         self.corpus: list = []
         self.idf: dict = {}
@@ -63,7 +63,7 @@ class TFIDF:
         }
 
     def tokenize(self, text: str) -> List[str]:
-        """Convert text into tokens."""
+        """Normalize text into a token list for TF-IDF indexing."""
         clean_text = re.sub(r"[^\w\s]", " ", text)
         words = clean_text.lower().split()
         tokens = [w for w in words if w not in self.STOPWORDS]
@@ -72,7 +72,7 @@ class TFIDF:
         return tokens
 
     def index(self, texts: List[str]) -> None:
-        """Create the BM25 index."""
+        """Build a TF-IDF index from the provided documents."""
         self.corpus = [self.tokenize(text) for text in texts]
         counter = {}
         n = len(self.corpus)
@@ -89,7 +89,7 @@ class TFIDF:
             self.idf[term] = math.log(len(self.corpus) / df)
 
     def calculate_tfidf(self, tf: float, idf: float, total_word: int) -> float:
-        """Calculate BM25 score."""
+        """Compute a normalized TF-IDF weight for a term in a document."""
         if total_word == 0 or tf == 0:
             return 0.0
         tf_sub = 1 + math.log(tf)
@@ -97,7 +97,7 @@ class TFIDF:
         return normalized_tf * idf
 
     def searcher(self, query: str, k: int) -> List[Tuple[float, int]]:
-        """Search documents using BM25."""
+        """Search the indexed corpus using TF-IDF similarity scores."""
         token_query = self.tokenize(query)
         scores = []
         i = 0
@@ -113,13 +113,13 @@ class TFIDF:
         return result[:k]
 
     def save(self, path: str) -> None:
-        """Save BM25 data to a JSON file."""
+        """Persist the TF-IDF index data to a JSON file."""
         data = {"idf": self.idf, "corpus": self.corpus}
         with open(path, "w", encoding="utf-8", errors="ignore") as file:
             json.dump(data, file, indent=2)
 
     def load(self, path: str) -> None:
-        """Load BM25 data from a JSON file."""
+        """Load previously saved TF-IDF index data from a JSON file."""
         try:
             with open(path, "r") as file:
                 content = json.load(file)
