@@ -1,3 +1,5 @@
+"""Model loading and answer generation support for the RAG system."""
+
 import json
 import sys
 from typing import Any, Dict, List
@@ -14,7 +16,14 @@ from src.models import (MinimalAnswer, StudentSearchResults,
 
 
 def load_chunk(path: str) -> Any:
-    """Load chunks from a JSON file."""
+    """Load chunks from a JSON file.
+
+    Args:
+        path: Path to the chunk metadata JSON.
+
+    Returns:
+        Parsed chunk data loaded from disk.
+    """
     try:
         with open(path, "r") as file:
             chunks = json.load(file)
@@ -25,7 +34,11 @@ def load_chunk(path: str) -> Any:
 
 
 def load_model() -> Any:
-    """Load the text generation model."""
+    """Load the text generation model.
+
+    Returns:
+        A text generation pipeline instantiated with Qwen/Qwen3-0.6B.
+    """
     pipe = pipeline("text-generation", model="Qwen/Qwen3-0.6B",
                     dtype=torch.float16)
     return pipe
@@ -37,7 +50,17 @@ def genrate_answer(
     all_chunks: List[Dict[str, Any]],
     chunks_retriever: List[Dict[str, Any]],
 ) -> str:
-    """Generate an answer using retrieved chunks."""
+    """Generate an answer using retrieved chunks.
+
+    Args:
+        pipe: The text generation pipeline.
+        question: The user question to answer.
+        all_chunks: All indexed chunks from the repository.
+        chunks_retriever: Retrieved chunk metadata to use as context.
+
+    Returns:
+        A generated answer string.
+    """
     context = []
 
     for results in chunks_retriever:
@@ -71,9 +94,15 @@ def genrate_dataset(
     all_chunks: List[Dict[str, Any]],
     dataset_path: str,
     output_path: str,
-    k: int,
 ) -> None:
-    """Generate answers for a dataset and save results."""
+    """Generate answers for a dataset and save results.
+
+    Args:
+        pipe: The text generation pipeline.
+        all_chunks: All indexed chunks from the repository.
+        dataset_path: Path to the student search results JSON.
+        output_path: Path to save the generated answers JSON.
+    """
     all_results = []
     dataset = StudentSearchResults(**load_chunk(dataset_path))
     questions = dataset.search_results
@@ -88,6 +117,9 @@ def genrate_dataset(
             answer=answer,
         )
         all_results.append(results)
-    output = StudentSearchResultsAndAnswer(search_results=all_results, k=k)
+    output = StudentSearchResultsAndAnswer(
+        search_results=all_results,
+        k=dataset.k,
+    )
     with open(output_path, "w") as file:
         json.dump(output.model_dump(), file, indent=2)

@@ -1,3 +1,5 @@
+"""Hybrid retrieval functions combining TF-IDF and semantic search."""
+
 import json
 import sys
 from typing import Any, Dict, List
@@ -32,6 +34,18 @@ def search(
     query: str,
     k: int,
 ) -> List[Dict[str, Any]]:
+    """Perform a hybrid search over indexed chunks.
+
+    Args:
+        chunks_path: Path to the chunk metadata JSON file.
+        tfidf: Loaded TF-IDF retriever.
+        semantic: Loaded semantic retriever.
+        query: User query string.
+        k: Number of top results to return.
+
+    Returns:
+        A list of retrieved source dictionaries.
+    """
     chunks = load_json(chunks_path)
     idx_tfidf = [idx for _, idx in tfidf.searcher(query, k=k)]
     idx_semantic = semantic.search(query, k=k)
@@ -55,6 +69,16 @@ def search_dataset(
     output_path: str,
     k: int,
 ) -> None:
+    """Search a dataset of questions and save results to JSON.
+
+    Args:
+        chunks_path: Path to the chunk metadata JSON file.
+        index_path: Path to the TF-IDF index JSON file.
+        embeddings_path: Path to the semantic embeddings file.
+        dataset_path: Path to the question dataset JSON.
+        output_path: Output path for serialized search results.
+        k: Number of top results to return for each question.
+    """
     all_results = []
     dataset = RagDataset(**load_json(dataset_path))
     questions_dataset = dataset.rag_questions

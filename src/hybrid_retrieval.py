@@ -1,3 +1,9 @@
+"""Hybrid retrieval utilities for ranking and combining multiple results.
+
+This module contains methods to merge lexical and semantic rankings into a
+single result list.
+"""
+
 def rrf(
     ifidf_result: list[int],
     semantic_result: list[int],

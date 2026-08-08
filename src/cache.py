@@ -1,3 +1,5 @@
+"""Caching utilities for query results and index objects."""
+
 import sys
 import re
 import json
@@ -12,6 +14,7 @@ class Cache:
     """Local cache for index objects and query results."""
 
     def __init__(self) -> None:
+        """Initialize the cache containers for query and index data."""
         self.query_cached: Dict[str, Any] = {}
         self.tfidf: TFIDF | None = None
         self.semantic: Semantic | None = None
@@ -19,7 +22,15 @@ class Cache:
     def get_index(
         self, index_path: str, embeddings_path: str
     ) -> Tuple[TFIDF, Semantic]:
-        """Load and cache index objects from disk."""
+        """Load and cache index objects from disk.
+
+        Args:
+            index_path: Path to the TF-IDF index JSON file.
+            embeddings_path: Path to the semantic embeddings file.
+
+        Returns:
+            A tuple containing the loaded TF-IDF and semantic index objects.
+        """
         if self.tfidf is None:
             self.tfidf = TFIDF()
             self.tfidf.load(index_path)
@@ -36,7 +47,18 @@ class Cache:
         query: str,
         k: int,
     ) -> Any:
-        """Search with caching for repeated query requests."""
+        """Search with caching for repeated query requests.
+
+        Args:
+            chunks_path: Path to the chunk metadata JSON file.
+            index_path: Path to the TF-IDF index JSON file.
+            embeddings_path: Path to the semantic embeddings file.
+            query: User query string.
+            k: Number of top results to request.
+
+        Returns:
+            The cached or freshly retrieved search results.
+        """
         clean_query = re.sub(r"[^\w\s]", "", query)
         key = f"{' '.join(clean_query.lower().strip())}-{k}"
         if key in self.query_cached:
@@ -50,12 +72,20 @@ class Cache:
         return self.query_cached[key]
 
     def save(self, path: str) -> None:
-        """Serialize the cached query map to disk."""
+        """Serialize the cached query map to disk.
+
+        Args:
+            path: File path where the cache JSON will be written.
+        """
         with open(path, "w", encoding="utf-8") as file:
             json.dump(self.query_cached, file, indent=2)
 
     def load(self, path: str) -> None:
-        """Load a saved cache map from disk."""
+        """Load a saved cache map from disk.
+
+        Args:
+            path: File path from which to read the cache JSON.
+        """
         try:
             with open(path, "r", encoding="utf-8") as file:
                 self.query_cached = json.load(file)

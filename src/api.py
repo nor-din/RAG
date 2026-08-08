@@ -1,4 +1,8 @@
-"""HTTP API wrapper for RAG search and answer endpoints."""
+"""HTTP API wrapper for RAG search and answer endpoints.
+
+This module exposes a small FastAPI service for query search and answer
+generation so the RAG system can be accessed over HTTP.
+"""
 
 import os
 import sys
@@ -33,7 +37,15 @@ def root() -> str:
 
 @app.get("/search")
 def search(query: str, k: int) -> Dict[str, List[Dict[str, Any]]]:
-    """Search for relevant chunks from the indexed corpus."""
+    """Search for relevant chunks from the indexed corpus.
+
+    Args:
+        query: Query text provided by the HTTP client.
+        k: Number of top chunks to retrieve.
+
+    Returns:
+        A JSON dictionary containing a list of retrieved source records.
+    """
     try:
         if not os.path.exists(CHUNKS_PATH):
             raise HTTPException(
@@ -78,7 +90,15 @@ def search(query: str, k: int) -> Dict[str, List[Dict[str, Any]]]:
 
 @app.get("/answer")
 def answer(query: str, k: int) -> Dict[str, str]:
-    """Generate an answer from retrieved chunks for a single query."""
+    """Generate an answer from retrieved chunks for a single query.
+
+    Args:
+        query: Query text provided by the HTTP client.
+        k: Number of top chunks to retrieve for answer generation.
+
+    Returns:
+        A JSON dictionary containing the generated answer text.
+    """
     try:
         if not os.path.exists(CHUNKS_PATH):
             raise HTTPException(

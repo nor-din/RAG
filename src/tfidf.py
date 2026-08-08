@@ -1,3 +1,5 @@
+"""TF-IDF lexical retrieval utilities for document ranking and search."""
+
 import sys
 import json
 import math
@@ -6,9 +8,14 @@ from typing import List, Tuple
 
 
 class TFIDF:
-    """Lexical text retrieval model that ranks documents with
-    TF-IDF scoring."""
+    """Lexical text retrieval model that ranks documents with TF-IDF scoring.
+
+    This class provides tokenization, index construction, persistence, and search
+    capabilities for lexical retrieval over chunked text documents.
+    """
+
     def __init__(self) -> None:
+        """Initialize the TF-IDF corpus, IDF mapping, and stopword set."""
         self.corpus: list = []
         self.idf: dict = {}
         self.STOPWORDS: set = {
@@ -64,7 +71,14 @@ class TFIDF:
         }
 
     def tokenize(self, text: str) -> List[str]:
-        """Normalize text into a token list for TF-IDF indexing."""
+        """Normalize text into a token list for TF-IDF indexing.
+
+        Args:
+            text: Raw text to tokenize.
+
+        Returns:
+            A list of normalized tokens.
+        """
         clean_text = re.sub(r"[^\w\s]", " ", text)
         words = clean_text.lower().split()
         tokens = [w for w in words if w not in self.STOPWORDS]
@@ -73,7 +87,11 @@ class TFIDF:
         return tokens
 
     def index(self, texts: List[str]) -> None:
-        """Build a TF-IDF index from the provided documents."""
+        """Build a TF-IDF index from the provided documents.
+
+        Args:
+            texts: List of document texts to index.
+        """
         self.corpus = [self.tokenize(text) for text in texts]
         counter = {}
         for doc in self.corpus:
@@ -89,7 +107,16 @@ class TFIDF:
             self.idf[term] = math.log(len(self.corpus) / df)
 
     def calculate_tfidf(self, tf: float, idf: float, total_word: int) -> float:
-        """Compute a normalized TF-IDF weight for a term in a document."""
+        """Compute a normalized TF-IDF weight for a term in a document.
+
+        Args:
+            tf: Term frequency in the document.
+            idf: Inverse document frequency value.
+            total_word: Total number of tokens in the document.
+
+        Returns:
+            The normalized TF-IDF score.
+        """
         if total_word == 0 or tf == 0:
             return 0.0
         tf_sub = 1 + math.log(tf)
@@ -97,7 +124,15 @@ class TFIDF:
         return normalized_tf * idf
 
     def searcher(self, query: str, k: int) -> List[Tuple[float, int]]:
-        """Search the indexed corpus using TF-IDF similarity scores."""
+        """Search the indexed corpus using TF-IDF similarity scores.
+
+        Args:
+            query: Text query to search for.
+            k: Number of top results to return.
+
+        Returns:
+            A list of score/index tuples for the top matching documents.
+        """
         token_query = self.tokenize(query)
         scores = []
         i = 0
@@ -113,13 +148,21 @@ class TFIDF:
         return result[:k]
 
     def save(self, path: str) -> None:
-        """Persist the TF-IDF index data to a JSON file."""
+        """Persist the TF-IDF index data to a JSON file.
+
+        Args:
+            path: Output file path for the saved index.
+        """
         data = {"idf": self.idf, "corpus": self.corpus}
         with open(path, "w", encoding="utf-8", errors="ignore") as file:
             json.dump(data, file, indent=2)
 
     def load(self, path: str) -> None:
-        """Load previously saved TF-IDF index data from a JSON file."""
+        """Load previously saved TF-IDF index data from a JSON file.
+
+        Args:
+            path: Path to the saved TF-IDF index JSON file.
+        """
         try:
             with open(path, "r") as file:
                 content = json.load(file)

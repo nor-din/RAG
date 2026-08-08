@@ -1,10 +1,19 @@
+"""Evaluation metrics for retrieval results in the RAG pipeline."""
+
 import sys
 import json
 from typing import Any
 
 
 def load_json(path: str) -> Any:
-    """Load a JSON file and return its content."""
+    """Load a JSON file and return its content.
+
+    Args:
+        path: Path to the JSON file.
+
+    Returns:
+        The parsed JSON content.
+    """
     try:
         with open(path, "r") as file:
             content = json.load(file)
@@ -15,20 +24,38 @@ def load_json(path: str) -> Any:
 
 
 def calculat_overlap(start1: int, end1: int, start2: int, end2: int) -> int:
-    """Calculate the overlap length between two character ranges."""
+    """Calculate the overlap length between two character ranges.
+
+    Args:
+        start1: Start position of the first range.
+        end1: End position of the first range.
+        start2: Start position of the second range.
+        end2: End position of the second range.
+
+    Returns:
+        The number of overlapping characters between the ranges.
+    """
     overlap = min(end1, end2) - max(start1, start2)
     return overlap
 
 
 def evaluation(
-    student_search_results_path: str, dataset_path: str, k: int,
+    student_search_results_path: str, dataset_path: str,
 ) -> float:
-    """Calculate Recall@k by comparing retrieved
-    sources with expected sources."""
+    """Calculate recall by comparing retrieved sources with expected sources.
+
+    Args:
+        student_search_results_path: Student search results JSON path.
+        dataset_path: Ground-truth dataset JSON path.
+
+    Returns:
+        The recall score calculated for the provided data.
+    """
     total = 0
     correct = 0
 
     student_datset = load_json(student_search_results_path)
+    k = student_datset.get("k", -1)
     dataset = load_json(dataset_path)
 
     for data_student in student_datset["search_results"]:

@@ -1,4 +1,9 @@
-"""CLI entrypoint for the RAG project."""
+"""Command-line interface entrypoint for the RAG project.
+
+This module exposes the core CLI commands used to index the corpus,
+search both individual queries and datasets, generate answers, evaluate
+recall metrics, and launch the HTTP API.
+"""
 
 import os
 import sys
@@ -20,7 +25,7 @@ except (ModuleNotFoundError, ImportError):
     print("Module not installed")
     sys.exit(1)
 
-REPO_PATH = "data/raw/vllm-0.10.1"
+REPO_PATH = "data/raw"
 CHUNKS_PATH = "data/processed/chunks.json"
 INDEX_PATH = "data/processed/tfidf_index.json"
 EMBEDDINGS_PATH = "data/processed/embeddings.pt"
@@ -32,12 +37,17 @@ class CLI:
     """Command-line interface for indexing, retrieval, and generation."""
 
     def __init__(self) -> None:
+        """Initialize the CLI with a cached query store."""
         self.cache = Cache()
         if os.path.exists(CACHE_PATH):
             self.cache.load(CACHE_PATH)
 
     def index(self, max_chunk_size: int = 2000) -> None:
-        """Create document chunks and build the search index."""
+        """Create document chunks and build the search index.
+
+        Args:
+            max_chunk_size: Maximum size in characters for each chunk.
+        """
         try:
             if max_chunk_size <= 0:
                 print("Error: max_chunk_size must be > 0")
@@ -55,7 +65,11 @@ class CLI:
             sys.exit(1)
 
     def incremental_index(self, max_chunk_size: int = 2000) -> None:
-        """Run incremental re-indexing for changed files."""
+        """Run incremental re-indexing for files changed since last index.
+
+        Args:
+            max_chunk_size: Maximum size in characters for each generated chunk.
+        """
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
@@ -78,7 +92,12 @@ class CLI:
             sys.exit(1)
 
     def search(self, query: str, k: int) -> None:
-        """Search the index for a single query and print the results."""
+        """Search the index for a single query and print the results.
+
+        Args:
+            query: Text query to search for.
+            k: Number of top results to return.
+        """
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
@@ -115,7 +134,13 @@ class CLI:
         k: int,
         save_directory: str = "data/output/search_results",
     ) -> None:
-        """Run dataset search and write StudentSearchResults output."""
+        """Run search for a dataset and write StudentSearchResults output.
+
+        Args:
+            dataset_path: Path to the dataset JSON file.
+            k: Number of top results to return for each question.
+            save_directory: Output directory for result JSON files.
+        """
         try:
             os.makedirs(save_directory, exist_ok=True)
             file_name = os.path.basename(dataset_path)
@@ -145,8 +170,12 @@ class CLI:
             sys.exit(1)
 
     def answer(self, query: str, k: int) -> None:
-        """Generate and print an answer for a user
-        query using retrieved chunks."""
+        """Generate and print an answer for a single query.
+
+        Args:
+            query: The user question to answer.
+            k: Number of top chunks to retrieve from the index.
+        """
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
@@ -193,17 +222,17 @@ class CLI:
     def answer_dataset(
         self,
         student_search_results_path: str,
-        k: int,
         save_directory: str = "data/output/search_results_and_answer",
     ) -> None:
-        """Generate answers for a dataset and
-        save JSON output."""
+        """Generate answers for a dataset and save JSON output.
+
+        Args:
+            student_search_results_path: Path to the student search results JSON.
+            save_directory: Directory where answer results are written.
+        """
         try:
             if not os.path.exists(CHUNKS_PATH):
                 print(f"Error: Repository not found at {CHUNKS_PATH}")
-                return
-            if k <= 0:
-                print("Error: k must be > 0")
                 return
             os.makedirs(save_directory, exist_ok=True)
             file_name = os.path.basename(student_search_results_path)
@@ -215,7 +244,6 @@ class CLI:
                 all_chunks,
                 student_search_results_path,
                 output_path,
-                k,
             )
             print(
                 f"Saved student_search_results to {output_path}"
@@ -228,21 +256,24 @@ class CLI:
         self,
         student_search_results_path: str,
         dataset_path: str,
-        k: int,
     ) -> None:
-        """Evaluate recall metrics for a given search results file and
-        ground-truth dataset."""
+        """Evaluate recall metrics for a search results file against ground truth.
+
+        Args:
+            student_search_results_path: Path to the student's search results JSON.
+            dataset_path: Path to the ground-truth dataset JSON.
+        """
         try:
-            if k <= 0:
-                print("Error: k must be > 0")
-                return
-            evaluation(student_search_results_path, dataset_path, k)
+            evaluation(student_search_results_path, dataset_path)
         except Exception as e:
             print(f"Error evaluating dataset: {e}")
             sys.exit(1)
 
     def http_api(self) -> None:
-        """Launch the HTTP API for search and answer endpoints."""
+        """Launch the HTTP API for search and answer endpoints.
+
+        This command starts the FastAPI server defined in src/api.py.
+        """
         try:
             uvicorn.run("src.api:app")
         except Exception as e:

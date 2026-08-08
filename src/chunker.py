@@ -1,4 +1,9 @@
-"""Chunk source files into smaller Python and Markdown pieces for retrieval."""
+"""Chunk source files into smaller Python and Markdown pieces for retrieval.
+
+This module provides utilities to load text files from a repository, split
+Python source and Markdown documents into smaller chunks, and serialize those
+chunks for downstream indexing and retrieval.
+"""
 
 import json
 import sys
@@ -13,7 +18,14 @@ from typing import Any, Dict, List
 
 
 def read_file(path_file: Path) -> str:
-    """Read file content from a path as UTF-8 text."""
+    """Read and return the text contents of a file.
+
+    Args:
+        path_file: Path of the file to read.
+
+    Returns:
+        The file contents as a UTF-8 decoded string.
+    """
     with open(path_file, "r", errors="ignore", encoding="utf-8") as file:
         content = file.read()
     return content
@@ -23,7 +35,15 @@ def chunk_python_code(
     path: str,
     max_chunk_size: int = 2000,
 ) -> List[Dict[str, Any]]:
-    """Chunk Python files under a path into blocks smaller than the limit."""
+    """Chunk Python files into smaller segments.
+
+    Args:
+        path: Root directory containing Python source files.
+        max_chunk_size: Maximum character length for each chunk.
+
+    Returns:
+        A list of dictionaries with file path, text, and character spans.
+    """
     chunks = []
     folder = Path(path)
     py_files = list(folder.rglob("*.py"))
@@ -86,7 +106,15 @@ def chunk_markedown(
     path: str,
     max_chunk_size: int = 2000,
 ) -> List[Dict[str, Any]]:
-    """Chunk Markdown files under a path into blocks smaller than the limit."""
+    """Chunk Markdown files into smaller segments.
+
+    Args:
+        path: Root directory containing Markdown files.
+        max_chunk_size: Maximum character length for each chunk.
+
+    Returns:
+        A list of dictionaries with file path, text, and character spans.
+    """
     chunks = []
     folder = Path(path)
     md_files = list(folder.rglob("*.md"))
@@ -146,7 +174,15 @@ def chunk_markedown(
 
 
 def chunker(path: str, max_chunk_size: int = 2000) -> List[Dict[str, Any]]:
-    """Chunk files under path into Python and Markdown pieces."""
+    """Chunk both Python and Markdown files for a repository.
+
+    Args:
+        path: Root directory containing source files.
+        max_chunk_size: Maximum character length for each chunk.
+
+    Returns:
+        A combined list of Python and Markdown chunk dictionaries.
+    """
     chunks = []
     chunks += chunk_python_code(path, max_chunk_size)
     chunks += chunk_markedown(path, max_chunk_size)
@@ -154,6 +190,11 @@ def chunker(path: str, max_chunk_size: int = 2000) -> List[Dict[str, Any]]:
 
 
 def save_chunks(chunks: List[Dict[str, Any]], output_path: str) -> None:
-    """Save a list of chunk dictionaries to a JSON file."""
+    """Save chunk metadata to a JSON output file.
+
+    Args:
+        chunks: Chunk dictionaries produced by chunker functions.
+        output_path: Path to write the serialized JSON data.
+    """
     with open(output_path, "w") as file:
         json.dump(chunks, file, indent=2)

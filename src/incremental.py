@@ -11,7 +11,12 @@ from src.indexer import indexer
 
 
 def save_times(repo_path: str, output_path: str) -> None:
-    """Save modification timestamps for Python and Markdown files."""
+    """Save modification timestamps for Python and Markdown files.
+
+    Args:
+        repo_path: Root repository path containing source files.
+        output_path: Where to write the timestamp snapshot JSON.
+    """
     folder = Path(repo_path)
     save_files: Dict[str, float] = {}
     for file in folder.rglob("*"):
@@ -22,8 +27,15 @@ def save_times(repo_path: str, output_path: str) -> None:
 
 
 def get_changed(repo_path: str, times_path: str) -> List[str]:
-    """Return the list of changed source files since the last timestamp
-    snapshot."""
+    """Return the list of changed source files since the last timestamp snapshot.
+
+    Args:
+        repo_path: Root path for repository source files.
+        times_path: Path to the saved timestamp snapshot JSON.
+
+    Returns:
+        A list of file paths that changed since the last snapshot.
+    """
     with open(times_path, "r", encoding="utf-8") as time_handle:
         times_files = json.load(time_handle)
     folder = Path(repo_path)
@@ -44,7 +56,16 @@ def incremental(
     embeddings_path: str,
     max_chunk_size: int = 2000,
 ) -> None:
-    """Update the stored index and chunk database for changed files."""
+    """Update the stored index and chunk database for changed files.
+
+    Args:
+        repo_path: Repository root path containing source files.
+        times_path: Path to the timestamp snapshot JSON.
+        chunk_path: Path to the stored chunk metadata JSON.
+        index_path: Output path for the TF-IDF index JSON.
+        embeddings_path: Output path for the semantic embeddings file.
+        max_chunk_size: Maximum size for each created text chunk.
+    """
     with open(
         chunk_path,
         "r",
