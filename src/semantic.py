@@ -1,7 +1,7 @@
 """Semantic embedding support for the RAG pipeline."""
 
 import sys
-from typing import List, cast
+from typing import List
 
 try:
     import numpy as np
@@ -30,7 +30,7 @@ class Semantic:
         score = util.cos_sim(vector_query, self.embeddings)
         np_result: np.ndarray = score.numpy()
         result: np.ndarray = np.argsort(np_result[0])[::-1][:k]
-        return cast(List[int], result.tolist())
+        return [int(x) for x in result]
 
     def save(self, path: str) -> None:
         """Save semantic embeddings to a file."""

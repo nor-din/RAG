@@ -3,4 +3,4 @@ __pycache__/
 .python-version
 env/
 .mypy_cache/
-data/output/
+

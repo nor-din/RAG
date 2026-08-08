@@ -6,7 +6,8 @@ from typing import List, Tuple
 
 
 class TFIDF:
-    """Lexical text retrieval model that ranks documents with TF-IDF scoring."""
+    """Lexical text retrieval model that ranks documents with
+    TF-IDF scoring."""
     def __init__(self) -> None:
         self.corpus: list = []
         self.idf: dict = {}
@@ -75,7 +76,6 @@ class TFIDF:
         """Build a TF-IDF index from the provided documents."""
         self.corpus = [self.tokenize(text) for text in texts]
         counter = {}
-        n = len(self.corpus)
         for doc in self.corpus:
             see = set()
             for word in doc:
