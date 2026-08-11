@@ -8,8 +8,6 @@ recall metrics, and launch the HTTP API.
 import os
 import sys
 
-import fire
-
 from src.cache import Cache
 from src.chunker import chunker, save_chunks
 from src.evaluation import evaluation
@@ -20,6 +18,7 @@ from src.incremental import incremental, save_times
 from src.retriever import search as ft_search
 from src.retriever import search_dataset as ft_search_dataset
 try:
+    import fire
     import uvicorn
 except (ModuleNotFoundError, ImportError):
     print("Module not installed")
