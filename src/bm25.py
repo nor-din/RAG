@@ -12,7 +12,7 @@ class BM25:
         self.b: float = 0.75
         self.corpus: list = []
         self.idf: dict = {}
-        self.avgd: int = 0
+        self.avgdl: float = 0.0
         self.STOPWORDS: set = {
             "a",
             "an",
@@ -117,7 +117,7 @@ class BM25:
 
     def save(self, path: str) -> None:
         """Save BM25 data to a JSON file."""
-        data = {"idf": self.idf, "avgdf": self.avgdl, "corpus": self.corpus}
+        data = {"idf": self.idf, "avgdl": self.avgdl, "corpus": self.corpus}
         with open(path, "w", encoding="utf-8", errors="ignore") as file:
             json.dump(data, file, indent=2)
 
@@ -127,7 +127,7 @@ class BM25:
             with open(path, "r") as file:
                 content = json.load(file)
             self.idf = content["idf"]
-            self.avgdl = content["avgdf"]
+            self.avgdl = content["avgdl"]
             self.corpus = content["corpus"]
         except json.JSONDecodeError as e:
             print(f"Invalid JSON: {e}")

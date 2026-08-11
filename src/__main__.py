@@ -26,7 +26,7 @@ except (ModuleNotFoundError, ImportError):
 
 REPO_PATH = "data/raw"
 CHUNKS_PATH = "data/processed/chunks.json"
-INDEX_PATH = "data/processed/tfidf_index.json"
+INDEX_PATH = "data/processed/bm25_index.json"
 EMBEDDINGS_PATH = "data/processed/embeddings.pt"
 TIME_PATH = "data/processed/time_files.json"
 CACHE_PATH = "data/processed/query_cache.json"
@@ -192,13 +192,13 @@ class CLI:
                 print("Error: query cannot be empty")
                 return
             pipe = load_model()
-            tfidf, semantic = self.cache.get_index(
+            bm25, semantic = self.cache.get_index(
                 INDEX_PATH,
                 EMBEDDINGS_PATH,
             )
             chunks_retriever = ft_search(
                 CHUNKS_PATH,
-                tfidf,
+                bm25,
                 semantic,
                 query,
                 k,

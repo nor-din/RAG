@@ -1,10 +1,10 @@
-"""Hybrid retrieval functions combining TF-IDF and semantic search."""
+"""Hybrid retrieval functions combining BM25 and semantic search."""
 
 import json
 import sys
 from typing import Any, Dict, List
 
-from src.tfidf import TFIDF
+from src.bm25 import BM25
 from src.semantic import Semantic
 from src.hybrid_retrieval import rrf
 
@@ -29,7 +29,7 @@ def load_json(path: str) -> Any:
 
 def search(
     chunks_path: str,
-    tfidf: TFIDF,
+    bm25: BM25,
     semantic: Semantic,
     query: str,
     k: int,
@@ -38,7 +38,7 @@ def search(
 
     Args:
         chunks_path: Path to the chunk metadata JSON file.
-        tfidf: Loaded TF-IDF retriever.
+        bm25: Loaded BM25 retriever.
         semantic: Loaded semantic retriever.
         query: User query string.
         k: Number of top results to return.
@@ -47,9 +47,9 @@ def search(
         A list of retrieved source dictionaries.
     """
     chunks = load_json(chunks_path)
-    idx_tfidf = [idx for _, idx in tfidf.searcher(query, k=k)]
+    idx_bm25 = [idx for _, idx in bm25.searcher(query, k=k)]
     idx_semantic = semantic.search(query, k=k)
-    results = rrf(idx_tfidf, idx_semantic, k)
+    results = rrf(idx_bm25, idx_semantic, k)
     found: list = []
     for idx in results:
         source = MinimalSource(
@@ -73,7 +73,7 @@ def search_dataset(
 
     Args:
         chunks_path: Path to the chunk metadata JSON file.
-        index_path: Path to the TF-IDF index JSON file.
+        index_path: Path to the BM25 index JSON file.
         embeddings_path: Path to the semantic embeddings file.
         dataset_path: Path to the question dataset JSON.
         output_path: Output path for serialized search results.
@@ -83,15 +83,15 @@ def search_dataset(
     dataset = RagDataset(**load_json(dataset_path))
     questions_dataset = dataset.rag_questions
     questions = [question for question in questions_dataset]
-    tfidf = TFIDF()
+    bm25 = BM25()
     semantic = Semantic()
-    tfidf.load(index_path)
+    bm25.load(index_path)
     semantic.load(embeddings_path)
     chunks = load_json(chunks_path)
     for query in tqdm(questions, desc="Searching"):
-        idx_tfidf = [idx for _, idx in tfidf.searcher(query.question, k=k)]
+        idx_bm25 = [idx for _, idx in bm25.searcher(query.question, k=k)]
         idx_semantic = semantic.search(query.question, k=k)
-        results = rrf(idx_tfidf, idx_semantic, k)
+        results = rrf(idx_bm25, idx_semantic, k)
         found: list = []
         for idx in results:
             source = MinimalSource(

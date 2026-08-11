@@ -8,7 +8,7 @@ import json
 import sys
 from typing import Any
 
-from src.tfidf import TFIDF
+from src.bm25 import BM25
 from src.semantic import Semantic
 
 
@@ -31,18 +31,18 @@ def load_chunk(path: str) -> Any:
 
 
 def indexer(chunks_path: str, index_path: str, embeddings_path: str) -> None:
-    """Build TFIDF and semantic indexes from chunked texts.
+    """Build BM25 and semantic indexes from chunked texts.
 
     Args:
         chunks_path: Path to the chunk JSON file.
-        index_path: Output path for the TFIDF index JSON file.
+        index_path: Output path for the BM25 index JSON file.
         embeddings_path: Output path for the semantic embeddings file.
     """
     chunks = load_chunk(chunks_path)
     corpus = [chunk["text"] for chunk in chunks]
-    retriever_tfidf = TFIDF()
-    retriever_tfidf.index(corpus)
-    retriever_tfidf.save(index_path)
+    retriever_bm25 = BM25()
+    retriever_bm25.index(corpus)
+    retriever_bm25.save(index_path)
     retriever_semantic = Semantic()
     retriever_semantic.index(corpus)
     retriever_semantic.save(embeddings_path)

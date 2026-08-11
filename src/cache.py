@@ -5,39 +5,39 @@ import re
 import json
 from typing import Any, Dict, Tuple
 
-from src.tfidf import TFIDF
+from src.bm25 import BM25
 from src.retriever import search
 from src.semantic import Semantic
 
 
 class Cache:
-    """Local cache for index objects and query results."""
+    """Local cache for query results and index objects."""
 
     def __init__(self) -> None:
         """Initialize the cache containers for query and index data."""
         self.query_cached: Dict[str, Any] = {}
-        self.tfidf: TFIDF | None = None
+        self.bm25: BM25 | None = None
         self.semantic: Semantic | None = None
 
     def get_index(
         self, index_path: str, embeddings_path: str
-    ) -> Tuple[TFIDF, Semantic]:
+    ) -> Tuple[BM25, Semantic]:
         """Load and cache index objects from disk.
 
         Args:
-            index_path: Path to the TF-IDF index JSON file.
+            index_path: Path to the BM25 index JSON file.
             embeddings_path: Path to the semantic embeddings file.
 
         Returns:
-            A tuple containing the loaded TF-IDF and semantic index objects.
+            A tuple containing the loaded BM25 and semantic index objects.
         """
-        if self.tfidf is None:
-            self.tfidf = TFIDF()
-            self.tfidf.load(index_path)
+        if self.bm25 is None:
+            self.bm25 = BM25()
+            self.bm25.load(index_path)
         if self.semantic is None:
             self.semantic = Semantic()
             self.semantic.load(embeddings_path)
-        return self.tfidf, self.semantic
+        return self.bm25, self.semantic
 
     def cache_query(
         self,
@@ -51,7 +51,7 @@ class Cache:
 
         Args:
             chunks_path: Path to the chunk metadata JSON file.
-            index_path: Path to the TF-IDF index JSON file.
+            index_path: Path to the BM25 index JSON file.
             embeddings_path: Path to the semantic embeddings file.
             query: User query string.
             k: Number of top results to request.
@@ -66,8 +66,8 @@ class Cache:
             return self.query_cached[key]
 
         print("Cache miss. Searching...")
-        tfidf, semantic = self.get_index(index_path, embeddings_path)
-        result = search(chunks_path, tfidf, semantic, query, k)
+        bm25, semantic = self.get_index(index_path, embeddings_path)
+        result = search(chunks_path, bm25, semantic, query, k)
         self.query_cached[key] = result
         return self.query_cached[key]
 

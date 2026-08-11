@@ -62,7 +62,7 @@ def incremental(
         repo_path: Repository root path containing source files.
         times_path: Path to the timestamp snapshot JSON.
         chunk_path: Path to the stored chunk metadata JSON.
-        index_path: Output path for the TF-IDF index JSON.
+        index_path: Output path for the BM25 index JSON.
         embeddings_path: Output path for the semantic embeddings file.
         max_chunk_size: Maximum size for each created text chunk.
     """
