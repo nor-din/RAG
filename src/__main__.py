@@ -48,6 +48,7 @@ class CLI:
             max_chunk_size: Maximum size in characters for each chunk.
         """
         try:
+            os.makedirs("data/processed/", exist_ok=True)
             if max_chunk_size <= 0:
                 print("Error: max_chunk_size must be > 0")
                 return
