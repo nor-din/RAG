@@ -67,8 +67,8 @@ class CLI:
         """Run incremental re-indexing for files changed since last index.
 
         Args:
-            max_chunk_size:
-            Maximum size in characters for each generated chunk.
+            max_chunk_size: Maximum size in characters
+            for each generated chunk.
         """
         try:
             if not os.path.exists(CHUNKS_PATH):
