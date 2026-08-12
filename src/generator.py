@@ -8,8 +8,8 @@ try:
     import torch
     from tqdm import tqdm
     from transformers import pipeline
-except (ModuleNotFoundError, ImportError):
-    print("Module not installed")
+except (ModuleNotFoundError, ImportError) as e:
+    print(f"Module not installed: {e}")
     sys.exit(1)
 from src.models import (MinimalAnswer, StudentSearchResults,
                         StudentSearchResultsAndAnswer)

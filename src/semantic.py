@@ -7,8 +7,8 @@ try:
     import numpy as np
     import torch
     from sentence_transformers import SentenceTransformer, util
-except (ImportError, ModuleNotFoundError):
-    print("Module not installed")
+except (ImportError, ModuleNotFoundError) as e:
+    print(f"Module not installed: {e}")
     sys.exit(1)
 
 

@@ -11,8 +11,8 @@ from pathlib import Path
 
 try:
     from tqdm import tqdm
-except (ModuleNotFoundError, ImportError):
-    print("Module not installed")
+except (ModuleNotFoundError, ImportError) as e:
+    print(f"Module not installed: {e}")
     sys.exit(1)
 from typing import Any, Dict, List
 

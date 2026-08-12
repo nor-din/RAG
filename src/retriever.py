@@ -10,8 +10,8 @@ from src.hybrid_retrieval import rrf
 
 try:
     from tqdm import tqdm
-except (ModuleNotFoundError, ImportError):
-    print("Module not installed")
+except (ModuleNotFoundError, ImportError) as e:
+    print(f"Module not installed: {e}")
     sys.exit(1)
 from src.models import (MinimalSearchResults, MinimalSource, RagDataset,
                         StudentSearchResults)

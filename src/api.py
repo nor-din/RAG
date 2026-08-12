@@ -10,8 +10,8 @@ import sys
 from typing import Any, Dict, List
 try:
     from fastapi import FastAPI, HTTPException
-except (ModuleNotFoundError, ImportError):
-    print("Module not installed")
+except (ModuleNotFoundError, ImportError) as e:
+    print(f"Module not installed: {e}")
     sys.exit(1)
 from src.cache import Cache
 from src.generator import genrate_answer, load_chunk, load_model
