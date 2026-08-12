@@ -27,7 +27,8 @@ def save_times(repo_path: str, output_path: str) -> None:
 
 
 def get_changed(repo_path: str, times_path: str) -> List[str]:
-    """Return the list of changed source files since the last timestamp snapshot.
+    """Return the list of changed source
+    files since the last timestamp snapshot.
 
     Args:
         repo_path: Root path for repository source files.

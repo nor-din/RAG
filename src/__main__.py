@@ -20,8 +20,8 @@ from src.retriever import search_dataset as ft_search_dataset
 try:
     import fire
     import uvicorn
-except (ModuleNotFoundError, ImportError):
-    print("Module not installed")
+except (ModuleNotFoundError, ImportError) as e:
+    print(f"Module not installed: {e}")
     sys.exit(1)
 
 REPO_PATH = "data/raw"
@@ -67,7 +67,8 @@ class CLI:
         """Run incremental re-indexing for files changed since last index.
 
         Args:
-            max_chunk_size: Maximum size in characters for each generated chunk.
+            max_chunk_size:
+            Maximum size in characters for each generated chunk.
         """
         try:
             if not os.path.exists(CHUNKS_PATH):
@@ -226,7 +227,8 @@ class CLI:
         """Generate answers for a dataset and save JSON output.
 
         Args:
-            student_search_results_path: Path to the student search results JSON.
+            student_search_results_path:
+            Path to the student search results JSON.
             save_directory: Directory where answer results are written.
         """
         try:
@@ -256,10 +258,12 @@ class CLI:
         student_search_results_path: str,
         dataset_path: str,
     ) -> None:
-        """Evaluate recall metrics for a search results file against ground truth.
+        """Evaluate recall
+        metrics for a search results file against ground truth.
 
         Args:
-            student_search_results_path: Path to the student's search results JSON.
+            student_search_results_path:
+            Path to the student's search results JSON.
             dataset_path: Path to the ground-truth dataset JSON.
         """
         try:
